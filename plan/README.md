@@ -1,6 +1,6 @@
 # Shared Context — Implementation Plan
 
-**Status:** M0–M3 implemented; M4 not started.
+**Status:** M0–M4 implemented; M5 not started.
 **Repository:** https://github.com/zauns/shared-context
 **Updated:** 2026-10-22
 
@@ -45,7 +45,7 @@ Shared Context is a local, multi-project issue tracker and context service for c
 - [x] **M1 — Domain + schema**: all tables, repositories, key generation, parent cycles, progress, FTS, soft delete batches, unit tests.
 - [x] **M2 — HTTP + SSE + concurrency**: JSON API, error envelope, SSE replay, change bus, integration and concurrency tests.
 - [x] **M3 — MCP**: Streamable HTTP transport, sessions, `identify`, 23 tools, MCP integration tests.
-- [ ] **M4 — Board UI**: shell, sidebar, six columns, cards, drag-and-drop, filters, URL state, SSE invalidation.
+- [x] **M4 — Board UI**: shell, sidebar, six columns, cards, drag-and-drop, filters, URL state, SSE invalidation.
 - [ ] **M5 — Issue drawer**: metadata editing, description editor, children, comments, activity, conflict banner.
 - [ ] **M6 — Attachments + PDF + vision + palette**: upload/open/read, PDF extraction, capability-gated images, global palette.
 - [ ] **M7 — Settings, trash, export, backup, startup**: settings, module manager, doc allowlist, trash/restore, export, Task Scheduler scripts, end-to-end verification.
@@ -62,6 +62,6 @@ Shared Context is a local, multi-project issue tracker and context service for c
 - Design docs: `CONTEXT.md` and eight ADRs.
 - Plan: these 13 specs.
 - Code: M0 scaffold and M1 domain/repositories/tests are implemented.
-- Tests: 5 docs/plan/schema guards and 37 Vitest tests pass.
+- Tests: 5 docs/plan/schema guards and 42 Vitest tests pass.
 - CI: typecheck, lint, tests, and build.
-- Next: M4 — board UI, sidebar, cards, drag-and-drop, and filters.
+- Next: M5 — editable Issue drawer, comments, activity, and conflict UX.

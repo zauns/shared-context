@@ -113,6 +113,8 @@ Acceptance:
 
 ## M4 — Board UI
 
+**Status:** complete.
+
 **Scope:** app shell, Project switcher, six-column board, cards, drag-and-drop, filters, URL state, SSE invalidation.
 
 Deliverables:
