@@ -4,7 +4,7 @@ A local, multi-project issue tracker and context service for coding agents, expo
 
 ## Project
 
-- Status: M0, M1, and M2 are implemented. M3 (MCP transport and tools) is next.
+- Status: M0, M1, M2, and M3 are implemented. M4 (board UI) is next.
 - Repository (private): https://github.com/zauns/shared-context
 - Source of truth: `plan/README.md` (plan index and milestone tracker), `CONTEXT.md` (domain glossary), and `docs/adr/` (decision records).
 - Stack: Node 24 + TypeScript, Express 5, `node:sqlite` (WAL + FTS5), React + Vite.
@@ -39,16 +39,18 @@ Implemented:
 - `src/server/http/server.ts` — Express app, host/CSRF guards, `/healthz`, API mounting, static UI fallback.
 - `src/server/http/routes/` — system/setup/config/actors/search, projects/modules/board/context/docs, issues/comments/links/attachments metadata, and SSE events.
 - `src/server/services/change-bus.ts` — post-commit publish, SSE fan-out, and `waitForChange`.
+- `src/server/services/mutations.ts` — cursor-captured post-commit publishing for HTTP and MCP.
+- `src/server/services/attachments.ts` — file copy, hashing, dedupe, text/PDF extraction, image gating.
+- `src/server/mcp/` — Streamable HTTP transport, session state, bearer auth, tool result envelopes, and all 23 tools.
 - `src/web/` — minimal React/Vite shell; M4 replaces it with the board and drawer.
 - `test/helpers/db.ts` — in-memory migrated database and seed.
 - `test/helpers/http.ts` — Supertest app with CSRF setup.
-- `test/unit/`, `test/integration/`, `test/concurrency/` — domain, HTTP, SSE, and concurrency tests.
+- `test/unit/`, `test/integration/`, `test/concurrency/`, `test/mcp/` — domain, HTTP, SSE, MCP, and concurrency tests.
 - `.github/workflows/ci.yml` — `npm ci`, typecheck, lint, test, build.
 
 Planned next:
 
-- M3: `/mcp` Streamable HTTP, sessions, `identify`, 23 tools.
-- M4–M7: board, drawer, attachments/PDF/vision, settings/backup/startup.
+- M4–M7: board, drawer, attachment UI/palette, settings/backup/startup.
 
 ## Conventions
 
@@ -69,4 +71,4 @@ Planned next:
 
 ## Notes
 
-M0/M1/M2 verified on 2026-10-22: 5 docs/plan/schema guards and 30 Vitest tests pass; `npm run build` and `npm run lint` pass.
+M0/M1/M2/M3 verified on 2026-10-22: 5 docs/plan/schema guards and 37 Vitest tests pass; `npm run build` and `npm run lint` pass.

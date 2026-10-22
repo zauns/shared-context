@@ -90,6 +90,8 @@ Acceptance:
 
 ## M3 — MCP
 
+**Status:** complete.
+
 **Scope:** Streamable HTTP transport, stateful sessions, all 23 tools, MCP client tests.
 
 Deliverables:

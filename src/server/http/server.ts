@@ -7,6 +7,7 @@ import type { AppConfig } from '../config.js';
 import type { Database } from '../db/connection.js';
 import type { Logger } from '../logger.js';
 import { ChangeBus } from '../services/change-bus.js';
+import { createMcpRouter } from '../mcp/http.js';
 import { createApiRouter } from './api.js';
 import { errorHandler, notFoundHandler } from './errors.js';
 import { hostGuard } from './middleware.js';
@@ -57,6 +58,8 @@ export function createApp({
     '/api',
     createApiRouter({ db, config, logger, bus, csrfToken }),
   );
+
+  app.use('/mcp', createMcpRouter({ db, config, bus }));
 
   if (webDir && fs.existsSync(path.join(webDir, 'index.html'))) {
     app.use(express.static(webDir));

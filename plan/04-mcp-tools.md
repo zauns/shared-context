@@ -1,6 +1,6 @@
 # 04 — MCP Tool Contracts
 
-**Status:** specified
+**Status:** implemented (M3)
 **Depends on:** [02-data-model](02-data-model.md), [03-concurrency](03-concurrency.md), [07-attachments](07-attachments.md)
 **Feeds:** M3
 

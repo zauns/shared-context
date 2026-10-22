@@ -2,7 +2,7 @@
 
 A local, multi-project issue tracker and context service for coding agents, exposed over MCP.
 
-**Status:** M0 (scaffold), M1 (schema + domain), and M2 (HTTP API + SSE) are implemented. M3 (MCP) is next.
+**Status:** M0 (scaffold), M1 (schema + domain), M2 (HTTP API + SSE), and M3 (MCP) are implemented. M4 (board UI) is next.
 
 ## Start here
 
@@ -17,11 +17,13 @@ A local, multi-project issue tracker and context service for coding agents, expo
 - SQLite schema with WAL, FTS5, migrations, and the full repository layer.
 - Domain services for Projects, Actors, Modules, Issues, hierarchy/progress, revisions, claims, blocking, soft delete/restore, activity, comments, links, attachments metadata, and allowlisted project docs.
 - HTTP JSON API for setup, projects, modules, issues, comments, links, actors, search, board, context, docs, activity, and attachment metadata.
-- CSRF, host, and origin guards; SSE replay from the Activity cursor; `waitForChange` for future MCP tools.
+- MCP Streamable HTTP at `/mcp` with bearer auth, stateful sessions, `identify`, and all 23 tools.
+- Attachment copy/hash/dedupe, text and PDF extraction, and capability-gated image content for MCP.
+- CSRF, host, and origin guards; SSE replay from the Activity cursor; `waitForChange`.
 - A minimal React/Vite shell that reports daemon health.
-- 30 domain, HTTP, SSE, and concurrency tests plus 5 docs/plan/schema guards.
+- 37 domain, HTTP, SSE, MCP, and concurrency tests plus 5 docs/plan/schema guards.
 
-Not implemented yet: MCP transport/tools, the kanban board, the issue drawer, attachment upload/content/open, PDF extraction, backups, export, and startup scripts.
+Not implemented yet: the kanban board, the issue drawer, the attachment upload/open UI, the command palette, backups, export, and startup scripts.
 
 ## Commands
 

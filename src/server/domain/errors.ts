@@ -18,6 +18,7 @@ export type DomainErrorCode =
   | 'cursor_invalid'
   | 'attachment_too_large'
   | 'unsupported_type'
+  | 'text_unavailable'
   | 'attachment_copy_failed'
   | 'doc_not_allowed'
   | 'unauthorized'
@@ -45,6 +46,7 @@ const STATUS: Record<DomainErrorCode, number> = {
   cursor_invalid: 400,
   attachment_too_large: 413,
   unsupported_type: 415,
+  text_unavailable: 415,
   attachment_copy_failed: 500,
   doc_not_allowed: 403,
   not_implemented: 501,
