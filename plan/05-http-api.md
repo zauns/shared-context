@@ -1,6 +1,6 @@
 # 05 — HTTP API
 
-**Status:** specified
+**Status:** implemented (M2); attachment/admin routes are stubs until M6/M7
 **Depends on:** [02-data-model](02-data-model.md), [03-concurrency](03-concurrency.md), [04-mcp-tools](04-mcp-tools.md), [07-attachments](07-attachments.md)
 **Feeds:** M2
 

@@ -4,7 +4,7 @@ A local, multi-project issue tracker and context service for coding agents, expo
 
 ## Project
 
-- Status: M0 and M1 are implemented. M2 (HTTP API, SSE, and concurrency through HTTP) is next.
+- Status: M0, M1, and M2 are implemented. M3 (MCP transport and tools) is next.
 - Repository (private): https://github.com/zauns/shared-context
 - Source of truth: `plan/README.md` (plan index and milestone tracker), `CONTEXT.md` (domain glossary), and `docs/adr/` (decision records).
 - Stack: Node 24 + TypeScript, Express 5, `node:sqlite` (WAL + FTS5), React + Vite.
@@ -36,16 +36,18 @@ Implemented:
 - `src/server/db/migrate.ts` + `db/migrations/001_init.sql` — versioned schema.
 - `src/server/db/repositories/` — projects, actors, modules, issues, activities, comments, links, attachments.
 - `src/server/domain/` — types, errors, validation, IDs, time, projects, project summaries, actors, modules, issues, activity, comments, links, attachments, docs.
-- `src/server/http/server.ts` — Express app, `/healthz`, static UI fallback; M2 adds the JSON API and SSE.
+- `src/server/http/server.ts` — Express app, host/CSRF guards, `/healthz`, API mounting, static UI fallback.
+- `src/server/http/routes/` — system/setup/config/actors/search, projects/modules/board/context/docs, issues/comments/links/attachments metadata, and SSE events.
+- `src/server/services/change-bus.ts` — post-commit publish, SSE fan-out, and `waitForChange`.
 - `src/web/` — minimal React/Vite shell; M4 replaces it with the board and drawer.
 - `test/helpers/db.ts` — in-memory migrated database and seed.
-- `test/unit/`, `test/concurrency/` — domain tests.
+- `test/helpers/http.ts` — Supertest app with CSRF setup.
+- `test/unit/`, `test/integration/`, `test/concurrency/` — domain, HTTP, SSE, and concurrency tests.
 - `.github/workflows/ci.yml` — `npm ci`, typecheck, lint, test, build.
 
 Planned next:
 
-- M2: `/api` routes, CSRF/host middleware, SSE, `wait_for_change` bus, HTTP concurrency tests.
-- M3: `/mcp` Streamable HTTP, sessions, 23 tools.
+- M3: `/mcp` Streamable HTTP, sessions, `identify`, 23 tools.
 - M4–M7: board, drawer, attachments/PDF/vision, settings/backup/startup.
 
 ## Conventions
@@ -67,4 +69,4 @@ Planned next:
 
 ## Notes
 
-M0/M1 verified on 2026-10-22: 5 docs/plan/schema guards and 20 Vitest tests pass; `npm run build` and `npm run lint` pass.
+M0/M1/M2 verified on 2026-10-22: 5 docs/plan/schema guards and 30 Vitest tests pass; `npm run build` and `npm run lint` pass.

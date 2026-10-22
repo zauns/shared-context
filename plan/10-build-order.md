@@ -66,6 +66,8 @@ Acceptance:
 
 ## M2 — HTTP, SSE, and concurrency
 
+**Status:** complete.
+
 **Scope:** the JSON API, error envelope, CSRF/host middleware, SSE, change bus, integration and concurrency tests.
 
 Deliverables:

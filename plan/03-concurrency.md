@@ -1,6 +1,6 @@
 # 03 — Concurrency, Revisions, and the Change Feed
 
-**Status:** partially implemented (domain); HTTP/SSE in M2
+**Status:** implemented (M2)
 
 ## Scope
 

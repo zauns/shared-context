@@ -1071,3 +1071,37 @@ export function getBoard(db: Database, input: BoardInput): BoardResult {
 export function getActorRowForInput(db: Database, ref: string): ActorRow {
   return requireActorRow(db, ref);
 }
+
+export interface IssueSearchResult {
+  project: { id: string; key: string; name: string };
+  issue: IssueCard;
+}
+
+export function searchIssues(
+  db: Database,
+  query: string,
+  limit = 20,
+): IssueSearchResult[] {
+  const sanitized = sanitizeFtsQuery(query);
+  if (!sanitized) return [];
+  const rows = db
+    .prepare(
+      `SELECT i.*
+       FROM issues_fts f
+       JOIN issues i ON i.rowid = f.rowid
+       WHERE issues_fts MATCH ? AND i.deleted_at IS NULL
+       ORDER BY bm25(issues_fts), i.updated_at DESC
+       LIMIT ?`,
+    )
+    .all(sanitized, Math.min(Math.max(limit, 1), 100)) as unknown as IssueRow[];
+  return rows.flatMap((row) => {
+    const project = findProjectRow(db, row.project_id);
+    if (!project) return [];
+    return [
+      {
+        project: { id: project.id, key: project.key, name: project.name },
+        issue: issueRowToCard(db, row),
+      },
+    ];
+  });
+}
