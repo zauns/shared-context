@@ -1,0 +1,3 @@
+# Revisions and atomic claims instead of locks
+
+Every Issue carries a Revision that increments on each mutation. Updates, stage moves, and deletes accept the expected Revision and return a conflict with the current Issue when it does not match, so concurrent agents re-read instead of silently overwriting each other. Claiming an Issue is a separate atomic operation that succeeds only when it is unassigned or already assigned to the caller. We rejected pessimistic locks and leases because they add expiry, deadlock, and stale-lock handling for a personal tool; the trade-off is that agents must treat conflicts as normal control flow.
