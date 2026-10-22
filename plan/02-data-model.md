@@ -1,8 +1,6 @@
 # 02 — Data Model
 
-**Status:** specified
-**Depends on:** [00-overview](00-overview.md), [03-concurrency](03-concurrency.md)
-**Feeds:** M1
+**Status:** implemented (M1)
 
 ## Storage
 

@@ -1,8 +1,6 @@
 # 03 — Concurrency, Revisions, and the Change Feed
 
-**Status:** specified
-**Depends on:** [02-data-model](02-data-model.md)
-**Feeds:** M1, M2, M3
+**Status:** partially implemented (domain); HTTP/SSE in M2
 
 ## Scope
 

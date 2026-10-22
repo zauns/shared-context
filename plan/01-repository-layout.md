@@ -1,8 +1,6 @@
 # 01 — Repository Layout and Toolchain
 
-**Status:** specified
-**Depends on:** [00-overview](00-overview.md)
-**Feeds:** M0
+**Status:** implemented (M0)
 
 ## Final tree
 
@@ -196,7 +194,7 @@ These are targets for M0, not present yet.
 - `eslint.config.js` — flat config, TypeScript + React rules.
 - `.prettierrc` — single quotes, semicolons, print width 100.
 - `.gitignore` — `node_modules/`, `dist/`, `coverage/`, `test-results/`, `playwright-report/`, `*.log`, `.env*`, `*.db*`, `data/`, `attachments/`, `backups/`, `logs/`, `Thumbs.db`, `.DS_Store`.
-- `.github/workflows/docs.yml` — Node 24, `node --test test/docs.test.mjs test/plan.test.mjs test/schema.test.mjs` on push and pull request. Extend to `npm test` in M0.
+- `.github/workflows/ci.yml` — Node 24, `npm ci`, typecheck, lint, tests, and build on push and pull request.
 
 ## Environment variables
 
@@ -219,23 +217,28 @@ Tests set `SHARED_CONTEXT_DATA_DIR` to a temporary directory. Never read the rea
 
 ## CI
 
-Current guard (committed now):
+CI (M0):
 
 ```yaml
-name: docs
+name: ci
 on: [push, pull_request]
 jobs:
-  docs:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-      - run: node --test test/docs.test.mjs test/plan.test.mjs test/schema.test.mjs
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
 ```
 
-In M0, add `npm ci`, `npm run typecheck`, and `npm test`. Add a Playwright job only after M4; it is slow and needs a browser install.
+Add a Playwright job only after M4; it is slow and needs a browser install.
 
 ## M0 acceptance criteria
 

@@ -1,6 +1,6 @@
 # Shared Context — Implementation Plan
 
-**Status:** specified; implementation not started.
+**Status:** M0–M1 implemented; M2 not started.
 **Repository:** https://github.com/zauns/shared-context
 **Updated:** 2026-10-22
 
@@ -41,8 +41,8 @@ Shared Context is a local, multi-project issue tracker and context service for c
 
 ## Milestone tracker
 
-- [ ] **M0 — Scaffold**: manifest, TypeScript, Express, Vite, Vitest, config, SQLite connection, migration runner, `/healthz`, docs/plan/schema guards in CI.
-- [ ] **M1 — Domain + schema**: all tables, repositories, key generation, parent cycles, progress, FTS, soft delete batches, unit tests.
+- [x] **M0 — Scaffold**: manifest, TypeScript, Express, Vite, Vitest, config, SQLite connection, migration runner, `/healthz`, docs/plan/schema guards in CI.
+- [x] **M1 — Domain + schema**: all tables, repositories, key generation, parent cycles, progress, FTS, soft delete batches, unit tests.
 - [ ] **M2 — HTTP + SSE + concurrency**: JSON API, error envelope, SSE replay, change bus, integration and concurrency tests.
 - [ ] **M3 — MCP**: Streamable HTTP transport, sessions, `identify`, 23 tools, MCP integration tests.
 - [ ] **M4 — Board UI**: shell, sidebar, six columns, cards, drag-and-drop, filters, URL state, SSE invalidation.
@@ -61,5 +61,7 @@ Shared Context is a local, multi-project issue tracker and context service for c
 
 - Design docs: `CONTEXT.md` and eight ADRs.
 - Plan: these 13 specs.
-- Code: none. No `package.json`, no `src/`, no app tests.
-- CI: docs/plan/schema guard only.
+- Code: M0 scaffold and M1 domain/repositories/tests are implemented.
+- Tests: 5 docs/plan/schema guards and 20 Vitest tests pass.
+- CI: typecheck, lint, tests, and build.
+- Next: M2 — HTTP API, SSE, and concurrency tests through the real API.

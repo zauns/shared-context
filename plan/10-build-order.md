@@ -14,6 +14,8 @@
 
 ## M0 — Scaffold
 
+**Status:** complete.
+
 **Scope:** repository, toolchain, config, SQLite connection, migration runner, health endpoint, docs/plan/schema guards in CI.
 
 Deliverables:
@@ -36,6 +38,8 @@ Acceptance:
 - The data directory is outside the repo and gitignored.
 
 ## M1 — Domain and schema
+
+**Status:** complete.
 
 **Scope:** every table, repository, domain rule, and unit test.
 
