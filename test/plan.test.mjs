@@ -48,3 +48,29 @@ test('plan ADR links resolve', () => {
     assert.ok(fs.existsSync(path.resolve(planDir, link)), `broken ADR link: ${link}`);
   }
 });
+
+test('all relative Markdown links in the plan and README resolve', () => {
+  const files = [
+    path.join(root, 'README.md'),
+    ...fs
+      .readdirSync(planDir)
+      .filter((name) => name.endsWith('.md'))
+      .map((name) => path.join(planDir, name)),
+  ];
+
+  for (const file of files) {
+    const body = fs.readFileSync(file, 'utf8');
+    for (const match of body.matchAll(/\]\(([^)\s]+)\)/g)) {
+      const target = match[1];
+      if (/^(https?:|mailto:|#)/.test(target)) continue;
+      const relativeTarget = target.split('#')[0];
+      if (!relativeTarget) continue;
+      const resolved = path.resolve(path.dirname(file), relativeTarget);
+      assert.ok(
+        fs.existsSync(resolved),
+        `broken link in ${path.relative(root, file)}: ${target}`,
+      );
+    }
+  }
+});
+
