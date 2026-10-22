@@ -5,7 +5,7 @@ A local, multi-project issue tracker and context service for coding agents, expo
 ## Project
 
 - Status: specified. There is no application code, `package.json`, or build tooling yet.
-- Repository: https://github.com/zauns/shared-context
+- Repository (private): https://github.com/zauns/shared-context
 - Source of truth: `plan/README.md` (plan index and milestone tracker), `CONTEXT.md` (domain glossary), and `docs/adr/` (decision records).
 - Planned stack: Node 24 + TypeScript, Express 5, `node:sqlite` (WAL + FTS5), React + Vite.
 - Planned entry point: `src/server/index.ts`. One daemon on `127.0.0.1:4319` serving `/mcp`, `/api`, `/api/events`, and the UI.
@@ -14,6 +14,7 @@ A local, multi-project issue tracker and context service for coding agents, expo
 ## Commands
 
 - `node --test test/docs.test.mjs test/plan.test.mjs test/schema.test.mjs` — validate the glossary, ADRs, plan index/spec links, and the v1 schema.
+- `gh run list --repo zauns/shared-context --limit 3` — check the docs/plan/schema CI runs.
 - No `npm test`, build, run, or lint commands exist yet. Do not assume a manifest.
 
 ## Architecture
@@ -27,6 +28,7 @@ Current, documentation-only:
 - `test/docs.test.mjs` — guard that the glossary terms and ADR count exist.
 - `test/plan.test.mjs` — guard that every spec is linked and every ADR link resolves.
 - `test/schema.test.mjs` — execute the v1 schema from `plan/02-data-model.md` in memory and check its constraints.
+- `.github/workflows/docs.yml` — run the same guards on push and pull request (Node 24).
 
 Planned (details in `plan/01-repository-layout.md`):
 
