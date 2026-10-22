@@ -138,6 +138,8 @@ Acceptance:
 
 ## M5 — Issue drawer
 
+**Status:** complete.
+
 **Scope:** detail drawer, metadata editing, description editor, children, comments, activity, conflict UX.
 
 Deliverables:

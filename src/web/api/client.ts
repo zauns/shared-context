@@ -1,7 +1,9 @@
 import type {
   ApiConfig,
   BoardResult,
+  Comment,
   IssueDetail,
+  IssueListResult,
   Module,
   ProjectSummary,
   SetupResult,
@@ -142,6 +144,110 @@ export const api = {
     return request(`/api/issues/${encodeURIComponent(issueKey)}/move`, {
       method: 'POST',
       body,
+    });
+  },
+
+  updateIssue(
+    issueKey: string,
+    body: {
+      expected_rev: number;
+      title?: string;
+      description?: string;
+      priority?: string;
+      assignee?: string | null;
+      module?: string | null;
+      parent?: string | null;
+    },
+  ): Promise<{ ok: true; changed: boolean; issue: IssueDetail }> {
+    return request(`/api/issues/${encodeURIComponent(issueKey)}`, {
+      method: 'PATCH',
+      body,
+    });
+  },
+
+  listIssues(projectKey: string, limit = 200): Promise<IssueListResult> {
+    return request(
+      `/api/issues?project=${encodeURIComponent(projectKey)}&limit=${limit}&view=compact`,
+    );
+  },
+
+  claimIssue(
+    issueKey: string,
+  ): Promise<{ ok: true; claimed: boolean; already_owned?: boolean; issue: IssueDetail }> {
+    return request(`/api/issues/${encodeURIComponent(issueKey)}/claim`, {
+      method: 'POST',
+      body: {},
+    });
+  },
+
+  releaseIssue(
+    issueKey: string,
+  ): Promise<{ ok: true; released: boolean; issue: IssueDetail }> {
+    return request(`/api/issues/${encodeURIComponent(issueKey)}/release`, {
+      method: 'POST',
+      body: {},
+    });
+  },
+
+  blockIssue(
+    issueKey: string,
+    body: { expected_rev: number; reason: string },
+  ): Promise<{ ok: true; changed: boolean; issue: IssueDetail }> {
+    return request(`/api/issues/${encodeURIComponent(issueKey)}/block`, {
+      method: 'POST',
+      body,
+    });
+  },
+
+  unblockIssue(
+    issueKey: string,
+    body: { expected_rev: number },
+  ): Promise<{ ok: true; changed: boolean; issue: IssueDetail }> {
+    return request(`/api/issues/${encodeURIComponent(issueKey)}/unblock`, {
+      method: 'POST',
+      body,
+    });
+  },
+
+  deleteIssue(
+    issueKey: string,
+    body: { expected_rev: number; cascade?: boolean; reason?: string },
+  ): Promise<{
+    ok: true;
+    deleted: Array<{ id: string; key: string; title: string }>;
+    batch: string;
+  }> {
+    const params = new URLSearchParams({ expected_rev: String(body.expected_rev) });
+    if (body.cascade) params.set('cascade', 'true');
+    if (body.reason) params.set('reason', body.reason);
+    return request(`/api/issues/${encodeURIComponent(issueKey)}?${params.toString()}`, {
+      method: 'DELETE',
+    });
+  },
+
+  addComment(
+    issueKey: string,
+    body: { body: string },
+  ): Promise<{ ok: true; comment: Comment }> {
+    return request(`/api/issues/${encodeURIComponent(issueKey)}/comments`, {
+      method: 'POST',
+      body,
+    });
+  },
+
+  updateComment(
+    commentId: string,
+    body: { body: string; expected_rev: number },
+  ): Promise<{ ok: true; comment: Comment }> {
+    return request(`/api/comments/${encodeURIComponent(commentId)}`, {
+      method: 'PATCH',
+      body,
+    });
+  },
+
+  deleteComment(commentId: string): Promise<{ ok: true }> {
+    return request(`/api/comments/${encodeURIComponent(commentId)}`, {
+      method: 'DELETE',
     });
   },
 

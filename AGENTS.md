@@ -4,7 +4,7 @@ A local, multi-project issue tracker and context service for coding agents, expo
 
 ## Project
 
-- Status: M0, M1, M2, M3, and M4 are implemented. M5 (editable Issue drawer) is next.
+- Status: M0, M1, M2, M3, M4, and M5 are implemented. M6 (attachment UI and command palette) is next.
 - Repository (private): https://github.com/zauns/shared-context
 - Source of truth: `plan/README.md` (plan index and milestone tracker), `CONTEXT.md` (domain glossary), and `docs/adr/` (decision records).
 - Stack: Node 24 + TypeScript, Express 5, `node:sqlite` (WAL + FTS5), React + Vite.
@@ -43,11 +43,11 @@ Implemented:
 - `src/server/services/attachments.ts` — file copy, hashing, dedupe, text/PDF extraction, image gating.
 - `src/server/mcp/` — Streamable HTTP transport, session state, bearer auth, tool result envelopes, and all 23 tools.
 - `src/web/api/` — typed client, TanStack Query hooks, SSE invalidation, and shared types.
-- `src/web/components/` — shell/sidebar, board, cards, filters, create modal, toasts, and read-only Issue drawer.
+- `src/web/components/` — shell/sidebar, board, cards, filters, create modal, toasts, and the editable Issue drawer.
 - `src/web/routes/` — setup, home redirect, Project shell, board, and deep-linked Issue route.
 - `src/web/lib/` — URL filter serialization, board position/move helpers, labels, and relative time.
 - `src/web/state/` — theme, density, collapsed columns, saved views, and last Project.
-- `src/web/` — React/Vite board UI; M5 adds editing.
+- `src/web/` — React/Vite board UI with editable drawer, comments, children, and conflict handling.
 - `test/helpers/db.ts` — in-memory migrated database and seed.
 - `test/helpers/http.ts` — Supertest app with CSRF setup.
 - `test/unit/`, `test/integration/`, `test/concurrency/`, `test/mcp/` — domain, HTTP, SSE, MCP, and concurrency tests.
@@ -55,8 +55,8 @@ Implemented:
 
 Planned next:
 
-- M5: editable drawer, title/description saves, conflict banner, children, comments, activity.
-- M6–M7: attachment UI/palette, settings/backup/startup.
+- M6: attachment upload/open UI, PDF/image reading, and the command palette.
+- M7: settings, trash, export, backup, startup scripts.
 
 ## Conventions
 
@@ -77,4 +77,4 @@ Planned next:
 
 ## Notes
 
-M0/M1/M2/M3/M4 verified on 2026-10-22: 5 docs/plan/schema guards and 42 Vitest tests pass; `npm run build` and `npm run lint` pass. Browser smoke covered setup, six columns, create Issue, drawer, drag to In Progress, and URL filters.
+M0/M1/M2/M3/M4/M5 verified on 2026-10-22: 5 docs/plan/schema guards and 42 Vitest tests pass; `npm run build` and `npm run lint` pass. Browser smoke covered setup, six columns, create Issue, drag, filters, title/description saves, priority update, block/unblock, comments, child creation, and conflict banner/reload.

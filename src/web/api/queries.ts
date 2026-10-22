@@ -5,6 +5,7 @@ import type {
   ApiConfig,
   BoardResult,
   IssueDetail,
+  IssueListResult,
   Module,
   ProjectSummary,
 } from './types.js';
@@ -17,6 +18,7 @@ export const queryKeys = {
     ['board', projectKey, filters] as const,
   issue: (issueKey: string) => ['issue', issueKey] as const,
   modules: (projectKey: string) => ['modules', projectKey] as const,
+  issueOptions: (projectKey: string) => ['issue-options', projectKey] as const,
   actors: ['actors'] as const,
 };
 
@@ -72,5 +74,16 @@ export function useActors() {
     queryKey: queryKeys.actors,
     queryFn: () => api.actors().then((result) => result.items),
     staleTime: 60_000,
+  });
+}
+
+export function useIssueOptions(projectKey: string | undefined) {
+  return useQuery<IssueListResult>({
+    queryKey: projectKey
+      ? queryKeys.issueOptions(projectKey)
+      : (['issue-options', 'missing'] as const),
+    queryFn: () => api.listIssues(projectKey!, 200),
+    enabled: Boolean(projectKey),
+    staleTime: 15_000,
   });
 }

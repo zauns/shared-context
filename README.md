@@ -2,7 +2,7 @@
 
 A local, multi-project issue tracker and context service for coding agents, exposed over MCP.
 
-**Status:** M0 (scaffold), M1 (schema + domain), M2 (HTTP API + SSE), M3 (MCP), and M4 (board UI) are implemented. M5 (editable drawer) is next.
+**Status:** M0 (scaffold), M1 (schema + domain), M2 (HTTP API + SSE), M3 (MCP), M4 (board UI), and M5 (editable drawer) are implemented. M6 (attachment UI and palette) is next.
 
 ## Start here
 
@@ -20,11 +20,12 @@ A local, multi-project issue tracker and context service for coding agents, expo
 - MCP Streamable HTTP at `/mcp` with bearer auth, stateful sessions, `identify`, and all 23 tools.
 - Attachment copy/hash/dedupe, text and PDF extraction, and capability-gated image content for MCP.
 - Kanban board with six columns, collapsible Done/Cancelled, compact cards, child progress, drag-and-drop, URL filters, saved views, and live SSE invalidation.
-- Project sidebar, setup flow, create-issue modal, and a read-only Issue drawer.
+- Editable Issue drawer: immediate Stage/Priority/Assignee/Module/Parent/Blocked updates, explicit title/description saves, conflict banner with reload/copy-draft, children creation, comments, delete dialog, and activity.
+- Project sidebar, setup flow, create-issue modal, and a read-only attachment/link section until M6.
 - CSRF, host, and origin guards; SSE replay from the Activity cursor; `waitForChange`.
 - 42 domain, HTTP, SSE, MCP, and concurrency tests plus 5 docs/plan/schema guards.
 
-Not implemented yet: editable drawer fields/conflict banner, comments in the drawer, attachment upload/open UI, the command palette, backups, export, and startup scripts.
+Not implemented yet: attachment upload/open UI, link editing, the command palette, backups, export, and startup scripts.
 
 ## Commands
 
