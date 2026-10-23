@@ -41,6 +41,7 @@ export function useProjectEvents(projectKey: string | undefined): SseStatus {
       void queryClient.invalidateQueries({ queryKey: ['board', projectKey] });
       void queryClient.invalidateQueries({ queryKey: ['issue'] });
       void queryClient.invalidateQueries({ queryKey: ['projects'] });
+      void queryClient.invalidateQueries({ queryKey: ['trash', projectKey] });
     };
 
     source.onopen = () => setState({ key: projectKey, status: 'open' });

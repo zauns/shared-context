@@ -1,15 +1,18 @@
 import type {
   ApiConfig,
   Attachment,
+  BackupListResult,
   BoardResult,
   Comment,
   IssueDetail,
   IssueListResult,
+  LastBackup,
   Link,
   Module,
   ProjectSummary,
   SearchResultItem,
   SetupResult,
+  TrashBatch,
   ActorRef,
 } from './types.js';
 import type { FilterState } from '../lib/filters.js';
@@ -330,5 +333,102 @@ export const api = {
     return request(`/api/links/${encodeURIComponent(linkId)}`, {
       method: 'DELETE',
     });
+  },
+
+  updateProject(
+    projectRef: string,
+    body: {
+      name?: string;
+      description?: string;
+      root_path?: string | null;
+      doc_allowlist?: string[];
+    },
+  ): Promise<{ ok: true; project: ProjectSummary }> {
+    return request(`/api/projects/${encodeURIComponent(projectRef)}`, {
+      method: 'PATCH',
+      body,
+    });
+  },
+
+  deleteProject(projectRef: string): Promise<{ ok: true }> {
+    return request(`/api/projects/${encodeURIComponent(projectRef)}`, {
+      method: 'DELETE',
+    });
+  },
+
+  createModule(
+    projectKey: string,
+    body: { name: string; color?: string | null },
+  ): Promise<{ ok: true; created: boolean; module: Module }> {
+    return request(`/api/projects/${encodeURIComponent(projectKey)}/modules`, {
+      method: 'POST',
+      body,
+    });
+  },
+
+  updateModule(
+    moduleId: string,
+    body: { name?: string; color?: string | null },
+  ): Promise<{ ok: true; module: Module }> {
+    return request(`/api/modules/${encodeURIComponent(moduleId)}`, {
+      method: 'PATCH',
+      body,
+    });
+  },
+
+  deleteModule(moduleId: string): Promise<{ ok: true }> {
+    return request(`/api/modules/${encodeURIComponent(moduleId)}`, {
+      method: 'DELETE',
+    });
+  },
+
+  trash(projectKey: string): Promise<{ ok: true; items: TrashBatch[] }> {
+    return request(`/api/projects/${encodeURIComponent(projectKey)}/trash`);
+  },
+
+  restoreTrashBatch(
+    projectKey: string,
+    batch: string,
+  ): Promise<{
+    ok: true;
+    restored: Array<{ id: string; key: string; title: string }>;
+    batch: string;
+  }> {
+    return request(
+      `/api/projects/${encodeURIComponent(projectKey)}/trash/${encodeURIComponent(batch)}/restore`,
+      { method: 'POST', body: {} },
+    );
+  },
+
+  backup(): Promise<{ ok: true; backup: LastBackup }> {
+    return request('/api/admin/backup', { method: 'POST', body: {} });
+  },
+
+  backups(): Promise<BackupListResult> {
+    return request('/api/admin/backups');
+  },
+
+  revealToken(): Promise<{ ok: true; token: string }> {
+    return request('/api/admin/token/reveal', { method: 'POST', body: {} });
+  },
+
+  regenerateToken(): Promise<{ ok: true; token: string }> {
+    return request('/api/admin/token/regenerate', { method: 'POST', body: {} });
+  },
+
+  updateActor(
+    actorId: string,
+    body: { name?: string; can_read_images?: boolean; color?: string | null },
+  ): Promise<{ ok: true; actor: ActorRef }> {
+    return request(`/api/actors/${encodeURIComponent(actorId)}`, {
+      method: 'PATCH',
+      body,
+    });
+  },
+
+  exportUrl(projectKey: string | undefined, format: 'md' | 'json'): string {
+    const params = new URLSearchParams({ format });
+    if (projectKey) params.set('project', projectKey);
+    return `/api/admin/export?${params.toString()}`;
   },
 };

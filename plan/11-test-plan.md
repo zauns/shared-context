@@ -115,7 +115,7 @@ Use the SDK client against a real HTTP server with a test token.
 
 ## UI tests (Playwright)
 
-**M6 status:** no Playwright suite is wired yet; `npm run test:ui` is not a working check. These flows were exercised by browser smoke on the built daemon; add the suite before relying on the command.
+**M7 status:** wired in `test/ui/smoke.spec.ts`; `npm run test:ui` builds the app and runs it, and `npm test` includes it. CI installs Chromium with `npx playwright install --with-deps chromium`; local runs use the installed Chrome channel.
 
 - Load the board; six columns; Done/Cancelled collapse.
 - Create an Issue from a column; Stage pre-filled.
@@ -156,7 +156,7 @@ Use the SDK client against a real HTTP server with a test token.
 - Docs/plan guards run on every push and PR now.
 - M0 adds `npm ci`, `npm run typecheck`, `npm test`.
 - M2 adds the concurrency suite as a required job.
-- UI automation is still open as of M6: add a Playwright job with a cached browser once the suite lands.
+- UI automation runs as part of `npm test`; CI installs Chromium with `npx playwright install --with-deps chromium`.
 - Windows-specific manual checks are documented, not CI-gated; a Windows runner can be added later for attachment/open tests.
 
 ## Acceptance criteria

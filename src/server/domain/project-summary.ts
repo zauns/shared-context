@@ -1,8 +1,7 @@
 import type { Database } from '../db/connection.js';
-import { listModuleRows } from '../db/repositories/modules.js';
+import { listModulesWithUsage } from './modules.js';
 import { projectCounts } from '../db/repositories/projects.js';
 import type { ProjectRow } from '../db/repositories/rows.js';
-import { moduleRowToModule } from './modules.js';
 import type { ProjectSummary } from './types.js';
 import { DEFAULT_DOC_ALLOWLIST } from './docs.js';
 import { parseJsonArray } from './validation.js';
@@ -23,7 +22,8 @@ export function projectRowToSummary(db: Database, row: ProjectRow): ProjectSumma
     name: row.name,
     description: row.description,
     root_path: row.root_path,
-    modules: listModuleRows(db, row.id).map(moduleRowToModule),
+    doc_allowlist: projectDocAllowlist(row),
+    modules: listModulesWithUsage(db, row.id),
     counts: projectCounts(db, row.id),
     updated_at: row.updated_at,
   };

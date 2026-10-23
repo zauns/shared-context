@@ -4,7 +4,7 @@ A local, multi-project issue tracker and context service for coding agents, expo
 
 ## Project
 
-- Status: M0, M1, M2, M3, M4, M5, and M6 are implemented. M7 (settings, trash, export, backup, startup) is next.
+- Status: M0, M1, M2, M3, M4, M5, M6, and M7 are implemented. No milestone is pending; deferred items remain in the plan.
 - Repository (private): https://github.com/zauns/shared-context
 - Source of truth: `plan/README.md` (plan index and milestone tracker), `CONTEXT.md` (domain glossary), and `docs/adr/` (decision records).
 - Stack: Node 24 + TypeScript, Express 5, `node:sqlite` (WAL + FTS5), React + Vite.
@@ -17,13 +17,16 @@ A local, multi-project issue tracker and context service for coding agents, expo
 - `npm run dev` — tsx server watch + Vite dev server.
 - `npm run typecheck` — typecheck server and web.
 - `npm run lint` — ESLint.
-- `npm test` — docs/plan/schema guards + all Vitest tests.
+- `npm test` — docs/plan/schema guards, all Vitest tests, and the Playwright UI smoke suite.
+- `npm run test:ui` — build the app and run Playwright (local Chrome channel).
 - `npm run test:unit` — unit tests only.
 - `npm run test:concurrency` — concurrency invariants only.
 - `npm run test:docs` — glossary, ADR, plan-link, and schema guards.
 - `npm run build` — compile server and build UI.
 - `npm start` — run the built daemon.
 - `npm run format` — Prettier.
+- `powershell -ExecutionPolicy Bypass -File .\scripts\install-startup.ps1` — register and start the `SharedContext` logon task (run `npm run build` first).
+- `powershell -ExecutionPolicy Bypass -File .\scripts\uninstall-startup.ps1` — stop and unregister the logon task.
 - `gh run list --repo zauns/shared-context --limit 3` — check CI runs.
 
 ## Architecture
@@ -42,21 +45,28 @@ Implemented:
 - `src/server/services/mutations.ts` — cursor-captured post-commit publishing for sync HTTP/MCP mutations and async attachment work.
 - `src/server/services/attachments.ts` — file copy, hashing, dedupe, text/PDF extraction, image gating, and realpath-contained file resolution.
 - `src/server/services/open-file.ts` — Windows default-handler launch with argument-safe `cmd /c start` (Explorer fallback), injectable for tests.
+- `src/server/services/backups.ts` — verified `VACUUM INTO` snapshots, attachment mirroring, retention, last-backup status, and the daily/catch-up scheduler.
+- `src/server/services/export.ts` — Markdown zip entries, JSON snapshot, and zip streaming.
+- `src/server/http/routes/admin.ts` — manual backup, backup listing, Markdown/JSON export, and token reveal/regenerate.
+- `src/server/domain/trash.ts` — deleted-batch listing and atomic batch restore.
 - `src/server/mcp/` — Streamable HTTP transport, session state, bearer auth, tool result envelopes, and all 23 tools.
-- `src/web/api/` — typed client, TanStack Query hooks, SSE invalidation, multipart upload, and shared types.
+- `src/web/api/` — typed client, TanStack Query hooks, SSE invalidation, multipart upload, settings/backup/export APIs, and shared types.
 - `src/web/components/` — shell/sidebar, board, cards, filters, create modal, toasts, command palette, and the editable Issue drawer with attachments and links.
-- `src/web/routes/` — setup, home redirect, Project shell, board, deep-linked Issue route, and a read-only Project settings overview.
+- `src/web/routes/` — setup, home redirect, Project shell, board, deep-linked Issue route, full Project settings, and global settings.
 - `src/web/lib/` — URL filter serialization, board position/move helpers, labels, byte formatting, and relative time.
 - `src/web/state/` — theme, density, collapsed columns, saved views, last/recent Projects, and recent Issues.
-- `src/web/` — React/Vite board UI with editable drawer, attachments, links, comments, children, conflict handling, and a `Ctrl/Cmd+K` palette.
+- `src/web/` — React/Vite board UI with editable drawer, attachments, links, comments, children, conflict handling, settings, and a `Ctrl/Cmd+K` palette.
+- `scripts/install-startup.ps1` + `scripts/uninstall-startup.ps1` — Task Scheduler logon task with a custom-data/config wrapper and `/healthz` verification.
+- `docs/restore.md` — stop, snapshot copy, WAL cleanup, attachment mirror, and verification steps.
 - `test/helpers/db.ts` — in-memory migrated database and seed.
 - `test/helpers/http.ts` — Supertest app with CSRF setup and an injectable OS opener.
-- `test/unit/`, `test/integration/`, `test/concurrency/`, `test/mcp/` — domain, HTTP (including attachments), SSE, MCP, and concurrency tests.
-- `.github/workflows/ci.yml` — `npm ci`, typecheck, lint, test, build.
+- `test/unit/`, `test/integration/`, `test/concurrency/`, `test/mcp/` — domain, HTTP (including attachments/settings/backups/export), SSE, MCP, and concurrency tests.
+- `test/ui/smoke.spec.ts` + `playwright.config.ts` — setup-to-settings browser smoke against a freshly built daemon.
+- `.github/workflows/ci.yml` — `npm ci`, Chromium install, typecheck, lint, test (including UI), build.
 
 Planned next:
 
-- M7: settings, trash, export, backup, startup scripts.
+- No milestone pending. Deferred: importer, OCR, per-agent tokens, notifications, purge UI, custom workflows, mobile-first layout.
 
 ## Conventions
 
@@ -77,6 +87,4 @@ Planned next:
 
 ## Notes
 
-M0–M6 verified on 2026-10-23: 5 docs/plan/schema guards and 57 Vitest tests pass; `npm run typecheck`, `npm run lint`, and `npm run build` pass (Vite still warns that the main chunk exceeds 500 kB). Browser smoke covered setup, six columns, create Issue, drag, filters, title/description saves, priority, block/unblock, comments, child creation, conflict banner/reload, attachment upload/remove with Activity, link add/remove, cross-project palette search, palette actions, and Escape.
-
-Test gap: `package.json` still has `test:ui: playwright test`, but `@playwright/test` is not installed and there is no Playwright config or suite. Do not claim `npm run test:ui` works until a UI test harness lands; browser smoke plus the Vitest HTTP/unit suites are the current UI verification.
+M0–M7 verified on 2026-10-23: 5 docs/plan/schema guards, 65 Vitest tests, and the Playwright UI smoke suite pass; `npm run typecheck`, `npm run lint`, and `npm run build` pass (Vite still warns that the main chunk exceeds 500 kB). The smoke covers setup, Issue creation, attachment upload, Project settings, module add, deletion + batch restore, Backup now, Markdown export download, token reveal/regenerate, and navigation. Task Scheduler registration was verified with a temporary task and removed; startup scripts expose `-VerifyOnly` and `-NoStart`.

@@ -16,8 +16,20 @@ import { nowIso } from './time.js';
 import type { Module } from './types.js';
 import { assertNonEmpty, slugify } from './validation.js';
 
-export function moduleRowToModule(row: ModuleRow): Module {
-  return { id: row.id, name: row.name, slug: row.slug, color: row.color };
+export function moduleRowToModule(row: ModuleRow, usageCount = 0): Module {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    color: row.color,
+    usage_count: usageCount,
+  };
+}
+
+export function listModulesWithUsage(db: Database, projectId: string): Module[] {
+  return listModuleRows(db, projectId).map((row) =>
+    moduleRowToModule(row, countModuleIssues(db, row.id)),
+  );
 }
 
 export function requireModuleRow(
@@ -72,7 +84,9 @@ export function listModules(db: Database, projectRef: string): Module[] {
   if (!project) {
     throw new DomainError('not_found', `Project not found: ${projectRef}`);
   }
-  return listModuleRows(db, project.id).map(moduleRowToModule);
+  return listModuleRows(db, project.id).map((row) =>
+    moduleRowToModule(row, countModuleIssues(db, row.id)),
+  );
 }
 
 export interface UpdateModuleInput {
@@ -93,7 +107,8 @@ export function updateModule(db: Database, id: string, input: UpdateModuleInput)
     fields.color = input.color;
   }
   updateModuleRow(db, existing.id, fields);
-  return moduleRowToModule(findModuleById(db, existing.id) ?? existing);
+  const row = findModuleById(db, existing.id) ?? existing;
+  return moduleRowToModule(row, countModuleIssues(db, row.id));
 }
 
 export function deleteModule(db: Database, id: string): void {

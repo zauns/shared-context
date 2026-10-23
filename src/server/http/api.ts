@@ -5,6 +5,7 @@ import type { Logger } from '../logger.js';
 import type { ChangeBus } from '../services/change-bus.js';
 import type { OpenFile } from '../services/open-file.js';
 import { csrfGuard } from './middleware.js';
+import { createAdminRouter } from './routes/admin.js';
 import { createAttachmentsRouter } from './routes/attachments.js';
 import { createEventsRouter } from './routes/events.js';
 import { createIssuesRouter } from './routes/issues.js';
@@ -24,9 +25,9 @@ export function createApiRouter(deps: ApiRouterDeps): Router {
   const router = Router();
   router.use(csrfGuard(deps.csrfToken));
   router.use(createSystemRouter(deps));
-  router.use(createProjectsRouter({ db: deps.db }));
-  router.use(createIssuesRouter({ db: deps.db, bus: deps.bus }));
-  router.use(
+  router.use(createAdminRouter({ db: deps.db, config: deps.config, logger: deps.logger }));
+  router.use(createProjectsRouter({ db: deps.db, bus: deps.bus }));
+  router.use(createIssuesRouter({ db: deps.db, bus: deps.bus }));  router.use(
     createAttachmentsRouter({
       db: deps.db,
       config: deps.config,

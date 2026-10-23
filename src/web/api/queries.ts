@@ -3,11 +3,13 @@ import { api } from './client.js';
 import type {
   ActorRef,
   ApiConfig,
+  BackupListResult,
   BoardResult,
   IssueDetail,
   IssueListResult,
   Module,
   ProjectSummary,
+  TrashBatch,
 } from './types.js';
 import type { FilterState } from '../lib/filters.js';
 
@@ -20,6 +22,8 @@ export const queryKeys = {
   modules: (projectKey: string) => ['modules', projectKey] as const,
   issueOptions: (projectKey: string) => ['issue-options', projectKey] as const,
   actors: ['actors'] as const,
+  trash: (projectKey: string) => ['trash', projectKey] as const,
+  backups: ['backups'] as const,
 };
 
 export function useConfig() {
@@ -85,5 +89,25 @@ export function useIssueOptions(projectKey: string | undefined) {
     queryFn: () => api.listIssues(projectKey!, 200),
     enabled: Boolean(projectKey),
     staleTime: 15_000,
+  });
+}
+
+export function useTrash(projectKey: string | undefined) {
+  return useQuery<TrashBatch[]>({
+    queryKey: projectKey
+      ? queryKeys.trash(projectKey)
+      : (['trash', 'missing'] as const),
+    queryFn: () => api.trash(projectKey!).then((result) => result.items),
+    enabled: Boolean(projectKey),
+    staleTime: 5_000,
+  });
+}
+
+export function useBackups(enabled = true) {
+  return useQuery<BackupListResult>({
+    queryKey: queryKeys.backups,
+    queryFn: () => api.backups(),
+    enabled,
+    staleTime: 5_000,
   });
 }

@@ -177,7 +177,7 @@ These are targets for M0, not present yet.
 | `test:integration` | `vitest run test/integration` | HTTP + SQLite tests |
 | `test:concurrency` | `vitest run test/concurrency` | Parallel write tests |
 | `test:mcp` | `vitest run test/mcp` | MCP client tests |
-| `test:ui` | `playwright test` | Browser smoke tests |
+| `test:ui` | `npm run build && playwright test` | Browser smoke tests |
 | `typecheck` | `tsc --noEmit` | Type check both projects |
 | `lint` | `eslint .` | Lint |
 | `format` | `prettier --write .` | Format |
@@ -238,7 +238,7 @@ jobs:
       - run: npm run build
 ```
 
-A Playwright job is not wired yet (M6); add it once the UI suite lands.
+Playwright runs inside `npm test`; CI installs Chromium with `npx playwright install --with-deps chromium`.
 
 ## M0 acceptance criteria
 

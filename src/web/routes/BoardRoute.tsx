@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router';
+import { useNavigate, useParams, useSearchParams, useLocation, Link } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { Plus, Settings } from 'lucide-react';
 import { api, ApiError } from '../api/client.js';
 import { queryKeys, useActors, useBoard, useModules, useProjects } from '../api/queries.js';
 import { useProjectEvents, type SseStatus } from '../api/sse.js';
@@ -176,6 +176,14 @@ export default function BoardRoute() {
         </div>
         <div className="ml-auto flex items-center gap-3">
           <SseIndicator status={sseStatus} />
+          <Link
+            className="btn btn-icon btn-ghost"
+            to={`/projects/${projectKey}/settings`}
+            aria-label="Project settings"
+            title="Project settings"
+          >
+            <Settings size={16} />
+          </Link>
           <button type="button" className="btn btn-primary" onClick={() => openCreate()}>
             <Plus size={15} />
             New Issue

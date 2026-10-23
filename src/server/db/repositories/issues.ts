@@ -379,11 +379,20 @@ export function restoreRows(db: Database, batch: string, now: string): void {
 export function rowsForBatch(
   db: Database,
   batch: string,
-): { id: string; key: string; title: string; parent_id: string | null }[] {
+): {
+  id: string;
+  project_id: string;
+  key: string;
+  title: string;
+  parent_id: string | null;
+}[] {
   return db
-    .prepare('SELECT id, key, title, parent_id FROM issues WHERE deletion_batch = ?')
+    .prepare(
+      'SELECT id, project_id, key, title, parent_id FROM issues WHERE deletion_batch = ?',
+    )
     .all(batch) as unknown as {
     id: string;
+    project_id: string;
     key: string;
     title: string;
     parent_id: string | null;

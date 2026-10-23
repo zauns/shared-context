@@ -7,6 +7,7 @@ import type { AppConfig } from '../config.js';
 import type { Database } from '../db/connection.js';
 import type { Logger } from '../logger.js';
 import { ChangeBus } from '../services/change-bus.js';
+import { readLastBackup } from '../services/backups.js';
 import type { OpenFile } from '../services/open-file.js';
 import { createMcpRouter } from '../mcp/http.js';
 import { createApiRouter } from './api.js';
@@ -46,10 +47,15 @@ export function createApp({
     const journal = db.prepare('PRAGMA journal_mode').get() as
       | { journal_mode: string }
       | undefined;
+    const schema = db.prepare('PRAGMA user_version').get() as unknown as {
+      user_version: number;
+    };
     response.json({
       ok: true,
       version: VERSION,
       uptime_seconds: process.uptime(),
+      schema_version: schema.user_version,
+      last_backup: readLastBackup(config),
       db: {
         open: true,
         journal_mode: journal?.journal_mode ?? 'unknown',

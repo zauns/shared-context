@@ -72,6 +72,14 @@ function readFileConfig(configPath: string): FileConfig {
 function writeFileConfig(configPath: string, file: FileConfig): void {
   fs.mkdirSync(path.dirname(configPath), { recursive: true });
   fs.writeFileSync(configPath, `${JSON.stringify(file, null, 2)}\n`, { mode: 0o600 });
+  if (process.platform !== 'win32') {
+    fs.chmodSync(configPath, 0o600);
+  }
+}
+
+export function persistConfigToken(configPath: string, token: string): void {
+  const file = readFileConfig(configPath);
+  writeFileConfig(configPath, { ...file, token });
 }
 
 export function loadConfig(overrides: Partial<AppConfig> = {}): AppConfig {

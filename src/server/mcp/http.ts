@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from 'express';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -30,12 +30,23 @@ function rpcError(response: Response, status: number, code: number, message: str
   });
 }
 
+function tokenMatches(supplied: string | undefined, expected: string): boolean {
+  if (!supplied) return false;
+  const provided = Buffer.from(supplied);
+  const wanted = Buffer.from(expected);
+  return (
+    provided.length === wanted.length && timingSafeEqual(provided, wanted)
+  );
+}
+
 export function createMcpRouter({ db, config, bus }: McpRouterDeps): Router {
   const router = Router();
   const sessions = new Map<string, McpSession>();
 
   const authorized = (request: Request, response: Response): boolean => {
-    if (request.header('authorization') === `Bearer ${config.token}`) return true;
+    const header = request.header('authorization');
+    const supplied = header?.startsWith('Bearer ') ? header.slice(7) : undefined;
+    if (tokenMatches(supplied, config.token)) return true;
     rpcError(response, 401, -32001, 'Unauthorized');
     return false;
   };

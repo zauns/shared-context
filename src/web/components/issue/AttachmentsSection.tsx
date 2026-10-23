@@ -138,9 +138,9 @@ export default function AttachmentsSection({ issue }: { issue: IssueDetail }) {
         accept={ACCEPT}
         multiple
         onChange={(event) => {
-          const files = event.target.files;
+          const files = Array.from(event.target.files ?? []);
           event.target.value = '';
-          if (files) void uploadFiles(files);
+          if (files.length > 0) void uploadFiles(files);
         }}
       />
 

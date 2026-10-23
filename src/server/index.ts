@@ -6,6 +6,7 @@ import { createLogger, type Logger } from './logger.js';
 import { openDatabase, closeDatabase, type Database } from './db/connection.js';
 import { migrate } from './db/migrate.js';
 import { createApp, listen } from './http/server.js';
+import { startBackupScheduler } from './services/backups.js';
 
 export interface StartedServer {
   app: ReturnType<typeof createApp>;
@@ -31,9 +32,11 @@ export async function startServer(overrides: Partial<AppConfig> = {}): Promise<S
   const address = server.address();
   const port = typeof address === 'object' && address ? address.port : config.port;
   logger.info({ host: config.host, port }, 'shared-context listening');
+  const backupScheduler = startBackupScheduler(db, config, logger);
 
   const shutdown = (signal: string) => {
     logger.info({ signal }, 'shutting down');
+    backupScheduler.stop();
     server.close(() => {
       closeDatabase(db);
       logger.info('shutdown complete');

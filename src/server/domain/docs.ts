@@ -26,6 +26,22 @@ function normalizeRelativePath(value: string): string {
   return normalized;
 }
 
+export function validateDocAllowlist(patterns: string[]): string[] {
+  if (patterns.length > 100) {
+    throw new DomainError('validation_error', 'Doc allowlist has too many entries');
+  }
+  return patterns.map((pattern) => {
+    const trimmed = pattern.trim();
+    if (!trimmed) {
+      throw new DomainError(
+        'validation_error',
+        'Doc allowlist entries must not be empty',
+      );
+    }
+    return normalizeRelativePath(trimmed);
+  });
+}
+
 // A small glob implementation for the allowlist: `*`, `?`, and `**/`.
 export function globToRegExp(pattern: string): RegExp {
   const source = pattern.replace(/\\/g, '/');
@@ -96,6 +112,7 @@ export function listProjectDocs(rootPath: string | null, allowlist: string[]): P
     if (pattern.includes('**')) {
       const prefix = pattern.slice(0, pattern.indexOf('**')).replace(/\/$/, '');
       const directory = prefix ? path.join(root, prefix) : root;
+      if (!insideRoot(root, path.resolve(directory))) continue;
       if (!fs.existsSync(directory)) continue;
       const files: string[] = [];
       walkFiles(directory, root, files);
@@ -104,6 +121,7 @@ export function listProjectDocs(rootPath: string | null, allowlist: string[]): P
       }
     } else if (isPathAllowed(pattern, [pattern])) {
       const absolute = path.join(root, pattern);
+      if (!insideRoot(root, path.resolve(absolute))) continue;
       if (fs.existsSync(absolute) && fs.statSync(absolute).isFile()) {
         candidates.add(pattern);
       }

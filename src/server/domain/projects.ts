@@ -13,9 +13,8 @@ import type { ProjectRow } from '../db/repositories/rows.js';
 import { DomainError } from './errors.js';
 import { newId } from './ids.js';
 import { nowIso } from './time.js';
-import type { ContextSnapshot, ProjectSummary } from './types.js';
-import { assertNonEmpty, assertProjectKey } from './validation.js';
-import { DEFAULT_DOC_ALLOWLIST, listProjectDocs, readProjectDoc } from './docs.js';
+import type { ContextSnapshot, ProjectSummary } from './types.js';import { assertNonEmpty, assertProjectKey } from './validation.js';
+import { DEFAULT_DOC_ALLOWLIST, listProjectDocs, readProjectDoc, validateDocAllowlist } from './docs.js';
 import { listProjectActivity } from './activity.js';
 import { issueRowToCard } from './issues.js';
 import { projectDocAllowlist, projectRowToSummary } from './project-summary.js';
@@ -45,7 +44,9 @@ export function createProject(db: Database, input: CreateProjectInput): ProjectS
     name,
     description,
     root_path: input.root_path ?? null,
-    doc_allowlist_json: JSON.stringify(input.doc_allowlist ?? DEFAULT_DOC_ALLOWLIST),
+    doc_allowlist_json: JSON.stringify(
+      input.doc_allowlist ? validateDocAllowlist(input.doc_allowlist) : DEFAULT_DOC_ALLOWLIST,
+    ),
     next_issue_number: 1,
     created_at: now,
     updated_at: now,
@@ -113,7 +114,7 @@ export function updateProject(
     fields.root_path = input.root_path;
   }
   if (input.doc_allowlist !== undefined) {
-    fields.doc_allowlist_json = JSON.stringify(input.doc_allowlist);
+    fields.doc_allowlist_json = JSON.stringify(validateDocAllowlist(input.doc_allowlist));
   }
 
   updateProjectRow(db, row.id, fields);

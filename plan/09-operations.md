@@ -1,6 +1,6 @@
 # 09 — Operations
 
-**Status:** specified
+**Status:** implemented (M7)
 **Depends on:** [01-repository-layout](01-repository-layout.md), [07-attachments](07-attachments.md), [08-security](08-security.md)
 **Feeds:** M0, M7
 

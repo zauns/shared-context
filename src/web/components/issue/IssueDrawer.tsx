@@ -410,6 +410,7 @@ function IssueDrawerContent({
       await queryClient.invalidateQueries({ queryKey: ['board', issue.project.key] });
       await queryClient.invalidateQueries({ queryKey: ['projects'] });
       await queryClient.invalidateQueries({ queryKey: ['issue-options', issue.project.key] });
+      await queryClient.invalidateQueries({ queryKey: ['trash', issue.project.key] });
       toast.push(`${issue.key} deleted.`, 'success');
       setDeleteOpen(false);
       onClose();

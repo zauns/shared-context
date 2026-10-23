@@ -6,6 +6,7 @@ import { actorRowToRef } from '../../domain/actors.js';
 import { DomainError } from '../../domain/errors.js';
 import { searchIssues } from '../../domain/issues.js';
 import { createProject, getProject } from '../../domain/projects.js';
+import { readLastBackup } from '../../services/backups.js';
 import {
   actorCreateSchema,
   actorUpdateSchema,
@@ -45,14 +46,24 @@ export function createSystemRouter({ db, config, csrfToken }: SystemRouterDeps):
   });
 
   router.get('/config', (_request, response) => {
+    const schema = db.prepare('PRAGMA user_version').get() as unknown as {
+      user_version: number;
+    };
     response.json({
       ok: true,
       version: '0.1.0',
       port: config.port,
       data_dir: config.dataDir,
+      attachments_dir: config.attachmentsDir,
+      config_path: config.configPath,
+      log_dir: config.logDir,
       backup_dir: config.backupDir,
+      backup_hour: config.backupHour,
+      backup_retention_days: config.backupRetentionDays,
+      schema_version: schema.user_version,
+      uptime_seconds: process.uptime(),
       setup_required: setupRequired(db),
-      last_backup: null,
+      last_backup: readLastBackup(config),
     });
   });
 

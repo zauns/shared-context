@@ -4,12 +4,14 @@ import ProjectShell from './routes/ProjectShell.js';
 import SetupRoute from './routes/SetupRoute.js';
 import BoardRoute from './routes/BoardRoute.js';
 import ProjectSettingsRoute from './routes/ProjectSettingsRoute.js';
+import GlobalSettingsRoute from './routes/GlobalSettingsRoute.js';
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<HomeRoute />} />
       <Route path="/setup" element={<SetupRoute />} />
+      <Route path="/settings" element={<GlobalSettingsRoute />} />
       <Route path="/projects/:projectKey" element={<ProjectShell />}>
         <Route index element={<Navigate to="board" replace />} />
         <Route path="board" element={<BoardRoute />} />

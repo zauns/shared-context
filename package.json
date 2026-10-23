@@ -13,13 +13,13 @@
     "build:server": "tsc -p tsconfig.server.json && node scripts/copy-server-assets.mjs",
     "build:web": "vite build",
     "start": "node dist/server/index.js",
-    "test": "npm run test:docs && vitest run",
+    "test": "npm run test:docs && vitest run && npm run test:ui",
     "test:docs": "node --test test/docs.test.mjs test/plan.test.mjs test/schema.test.mjs",
     "test:unit": "vitest run test/unit",
     "test:integration": "vitest run test/integration",
     "test:concurrency": "vitest run test/concurrency",
     "test:mcp": "vitest run test/mcp",
-    "test:ui": "playwright test",
+    "test:ui": "npm run build && playwright test",
     "typecheck": "tsc -p tsconfig.server.json --noEmit && tsc -p tsconfig.web.json --noEmit",
     "lint": "eslint .",
     "format": "prettier --write ."
@@ -55,6 +55,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/archiver": "^8.0.0",
     "@types/express": "^5.0.6",

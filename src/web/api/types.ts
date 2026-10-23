@@ -32,6 +32,7 @@ export interface Module {
   name: string;
   slug: string;
   color: string | null;
+  usage_count?: number;
 }
 
 export interface ChildProgress {
@@ -148,6 +149,7 @@ export interface ProjectSummary {
   name: string;
   description: string;
   root_path: string | null;
+  doc_allowlist: string[];
   modules: Module[];
   counts: {
     by_stage: StageCounts;
@@ -177,9 +179,16 @@ export interface ApiConfig {
   version: string;
   port: number;
   data_dir: string;
+  attachments_dir: string;
+  config_path: string;
+  log_dir: string;
   backup_dir: string;
+  backup_hour: number;
+  backup_retention_days: number;
+  schema_version: number;
+  uptime_seconds: number;
   setup_required: boolean;
-  last_backup: string | null;
+  last_backup: LastBackup | null;
 }
 
 export interface SetupResult {
@@ -198,4 +207,32 @@ export interface IssueListResult {
 export interface SearchResultItem {
   project: { id: string; key: string; name: string };
   issue: IssueCard;
+}
+
+export interface TrashBatch {
+  batch: string;
+  deleted_at: string;
+  deleted_by: ActorRef | null;
+  issues: Array<{ id: string; key: string; title: string }>;
+}
+
+export interface BackupSummary {
+  filename: string;
+  created_at: string;
+  size_bytes: number;
+}
+
+export interface LastBackup {
+  at: string;
+  filename: string;
+  size_bytes: number;
+  attachment_count: number;
+  ok: boolean;
+  error?: string;
+}
+
+export interface BackupListResult {
+  ok: true;
+  items: BackupSummary[];
+  last: LastBackup | null;
 }

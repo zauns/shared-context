@@ -30,6 +30,7 @@ export interface Module {
   name: string;
   slug: string;
   color: string | null;
+  usage_count?: number;
 }
 
 export interface ChildProgress {
@@ -43,6 +44,13 @@ export interface IssueRef {
   id: string;
   key: string;
   title: string;
+}
+
+export interface TrashBatch {
+  batch: string;
+  deleted_at: string;
+  deleted_by: ActorRef | null;
+  issues: IssueRef[];
 }
 
 export interface IssueCard {
@@ -135,6 +143,7 @@ export interface ProjectSummary {
   name: string;
   description: string;
   root_path: string | null;
+  doc_allowlist: string[];
   modules: Module[];
   counts: {
     by_stage: StageCounts;

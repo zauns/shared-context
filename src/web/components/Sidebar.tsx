@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { LayoutGrid, Moon, Plus, SlidersHorizontal, Sun } from 'lucide-react';
+import { LayoutGrid, Moon, Plus, Settings, SlidersHorizontal, Sun } from 'lucide-react';
 import type { ProjectSummary } from '../api/types.js';
 
 export default function Sidebar({
@@ -77,6 +77,17 @@ export default function Sidebar({
           <p className="px-2.5 py-2 text-xs muted">No Projects yet.</p>
         ) : null}
       </nav>
+
+      <div className="border-t border-subtle px-3 pt-2">
+        <Link
+          to="/settings"
+          className="btn btn-ghost w-full justify-start"
+          title="Global settings"
+        >
+          <Settings size={14} />
+          Settings
+        </Link>
+      </div>
 
       <div className="flex items-center gap-2 border-t border-subtle px-3 py-3">
         <button

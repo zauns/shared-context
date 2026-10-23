@@ -187,6 +187,8 @@ Acceptance:
 
 ## M7 — Settings, trash, export, backup, startup
 
+**Status:** complete.
+
 **Scope:** project/global settings, module manager, doc allowlist, trash, backup now, export, Task Scheduler scripts, end-to-end verification.
 
 Deliverables:

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import type { Database } from '../../db/connection.js';
+import type { ChangeBus } from '../../services/change-bus.js';
 import {
   createModule,
   deleteModule,
@@ -15,10 +16,12 @@ import {
   readProjectDocument,
   updateProject,
 } from '../../domain/projects.js';
+import { listTrashBatches, restoreTrashBatch } from '../../domain/trash.js';
 import { getBoard } from '../../domain/issues.js';
 import { listProjectActivity } from '../../domain/activity.js';
 import { DomainError } from '../../domain/errors.js';
-import { optionalActorId } from '../actor-context.js';
+import { resolveRequestActor, optionalActorId } from '../actor-context.js';
+import { mutateWithPublish } from '../publish.js';
 import {
   moduleCreateSchema,
   moduleUpdateSchema,
@@ -33,6 +36,7 @@ import {
 
 export interface ProjectsRouterDeps {
   db: Database;
+  bus: ChangeBus;
 }
 
 function boardQuery(
@@ -54,7 +58,7 @@ function boardQuery(
   };
 }
 
-export function createProjectsRouter({ db }: ProjectsRouterDeps): Router {
+export function createProjectsRouter({ db, bus }: ProjectsRouterDeps): Router {
   const router = Router();
 
   router.get('/projects', (_request, response) => {
@@ -97,6 +101,25 @@ export function createProjectsRouter({ db }: ProjectsRouterDeps): Router {
       ok: true,
       items: listProjectActivity(db, project.id, limit, before),
     });
+  });
+
+  router.get('/projects/:ref/trash', (request, response) => {
+    response.json({
+      ok: true,
+      items: listTrashBatches(db, request.params.ref),
+    });
+  });
+
+  router.post('/projects/:ref/trash/:batch/restore', (request, response) => {
+    const actor = resolveRequestActor(db, request);
+    const result = mutateWithPublish(db, bus, () =>
+      restoreTrashBatch(db, {
+        project: request.params.ref,
+        batch: request.params.batch,
+        actor: actor.id,
+      }),
+    );
+    response.json({ ok: true, ...result });
   });
 
   router.get('/projects/:ref/modules', (request, response) => {
