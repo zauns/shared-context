@@ -1,11 +1,14 @@
 import type {
   ApiConfig,
+  Attachment,
   BoardResult,
   Comment,
   IssueDetail,
   IssueListResult,
+  Link,
   Module,
   ProjectSummary,
+  SearchResultItem,
   SetupResult,
   ActorRef,
 } from './types.js';
@@ -46,6 +49,26 @@ async function ensureCsrf(): Promise<string> {
   return csrfToken;
 }
 
+type ErrorPayload = {
+  ok?: boolean;
+  error?: { code?: string; message?: string; details?: Record<string, unknown> };
+  issue?: unknown;
+};
+
+async function readPayload<T>(response: Response): Promise<T> {
+  const payload = (await response.json().catch(() => null)) as ErrorPayload | null;
+  if (!response.ok) {
+    throw new ApiError(
+      response.status,
+      payload?.error?.code ?? 'http_error',
+      payload?.error?.message ?? `HTTP ${response.status}`,
+      payload?.error?.details,
+      payload?.issue,
+    );
+  }
+  return payload as T;
+}
+
 async function request<T>(
   path: string,
   options: { method?: string; body?: unknown } = {},
@@ -61,20 +84,16 @@ async function request<T>(
     headers,
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
   });
-  const payload = (await response.json().catch(() => null)) as
-    | { ok?: boolean; error?: { code?: string; message?: string; details?: Record<string, unknown> }; issue?: unknown }
-    | null;
+  return readPayload<T>(response);
+}
 
-  if (!response.ok) {
-    throw new ApiError(
-      response.status,
-      payload?.error?.code ?? 'http_error',
-      payload?.error?.message ?? `HTTP ${response.status}`,
-      payload?.error?.details,
-      payload?.issue,
-    );
-  }
-  return payload as T;
+async function requestForm<T>(path: string, form: FormData): Promise<T> {
+  const headers = new Headers({
+    Accept: 'application/json',
+    'X-CSRF-Token': await ensureCsrf(),
+  });
+  const response = await fetch(path, { method: 'POST', headers, body: form });
+  return readPayload<T>(response);
 }
 
 function boardQuery(filters: FilterState): string {
@@ -257,5 +276,59 @@ export const api = {
 
   actors(): Promise<{ ok: true; items: ActorRef[] }> {
     return request('/api/actors');
+  },
+
+  search(query: string, limit = 20): Promise<{ ok: true; items: SearchResultItem[] }> {
+    const params = new URLSearchParams({ q: query, limit: String(limit) });
+    return request(`/api/search?${params.toString()}`);
+  },
+
+  uploadAttachment(
+    issueKey: string,
+    file: File,
+    name?: string,
+  ): Promise<{ ok: true; attachment: Attachment; deduplicated: boolean }> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    if (name) form.append('name', name);
+    return requestForm(
+      `/api/issues/${encodeURIComponent(issueKey)}/attachments`,
+      form,
+    );
+  },
+
+  attachmentContentUrl(attachmentId: string, download = false): string {
+    return `/api/attachments/${encodeURIComponent(attachmentId)}/content${
+      download ? '?download=1' : ''
+    }`;
+  },
+
+  openAttachment(attachmentId: string): Promise<{ ok: true }> {
+    return request(`/api/attachments/${encodeURIComponent(attachmentId)}/open`, {
+      method: 'POST',
+      body: {},
+    });
+  },
+
+  deleteAttachment(attachmentId: string): Promise<{ ok: true }> {
+    return request(`/api/attachments/${encodeURIComponent(attachmentId)}`, {
+      method: 'DELETE',
+    });
+  },
+
+  addLink(
+    issueKey: string,
+    body: { url: string; label?: string | null },
+  ): Promise<{ ok: true; link: Link }> {
+    return request(`/api/issues/${encodeURIComponent(issueKey)}/links`, {
+      method: 'POST',
+      body,
+    });
+  },
+
+  removeLink(linkId: string): Promise<{ ok: true }> {
+    return request(`/api/links/${encodeURIComponent(linkId)}`, {
+      method: 'DELETE',
+    });
   },
 };

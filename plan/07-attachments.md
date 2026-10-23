@@ -1,6 +1,6 @@
 # 07 — Attachments, PDFs, and Images
 
-**Status:** specified
+**Status:** implemented (M6); backups in M7
 **Depends on:** [02-data-model](02-data-model.md), [08-security](08-security.md)
 **Feeds:** M6
 
@@ -89,10 +89,10 @@ Images above 5 MB are not returned as content blocks even to vision Actors; they
 1. Require CSRF and same-origin.
 2. Resolve the Attachment; reject deleted rows.
 3. Resolve the stored path and verify it is inside the data directory with `realpath`.
-4. Launch the Windows default handler:
+4. Launch the Windows default handler with an explicit empty window title and the quoted path as one argument:
 
 ```ts
-spawn('cmd.exe', ['/c', 'start', '', absolutePath], {
+spawn('cmd.exe', ['/c', 'start', '""', `"${absolutePath}"`], {
   windowsHide: true,
   windowsVerbatimArguments: true,
   detached: true,

@@ -163,6 +163,8 @@ Acceptance:
 
 ## M6 — Attachments, PDFs, vision, palette
 
+**Status:** complete.
+
 **Scope:** upload/open/read, text extraction, capability-gated images, global command palette.
 
 Deliverables:

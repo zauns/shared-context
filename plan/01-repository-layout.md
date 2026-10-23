@@ -238,7 +238,7 @@ jobs:
       - run: npm run build
 ```
 
-Add a Playwright job only after M4; it is slow and needs a browser install.
+A Playwright job is not wired yet (M6); add it once the UI suite lands.
 
 ## M0 acceptance criteria
 

@@ -7,6 +7,7 @@ import type { AppConfig } from '../config.js';
 import type { Database } from '../db/connection.js';
 import type { Logger } from '../logger.js';
 import { ChangeBus } from '../services/change-bus.js';
+import type { OpenFile } from '../services/open-file.js';
 import { createMcpRouter } from '../mcp/http.js';
 import { createApiRouter } from './api.js';
 import { errorHandler, notFoundHandler } from './errors.js';
@@ -21,6 +22,7 @@ export interface AppDependencies {
   webDir?: string;
   bus?: ChangeBus;
   csrfToken?: string;
+  openFile?: OpenFile;
 }
 
 export function createApp({
@@ -30,6 +32,7 @@ export function createApp({
   webDir,
   bus = new ChangeBus(),
   csrfToken = randomBytes(24).toString('base64url'),
+  openFile,
 }: AppDependencies): Express {
   const app = express();
   app.disable('x-powered-by');
@@ -56,7 +59,7 @@ export function createApp({
 
   app.use(
     '/api',
-    createApiRouter({ db, config, logger, bus, csrfToken }),
+    createApiRouter({ db, config, logger, bus, csrfToken, openFile }),
   );
 
   app.use('/mcp', createMcpRouter({ db, config, bus }));

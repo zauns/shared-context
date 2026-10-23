@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useQueryClient } from '@tanstack/react-query';
@@ -9,9 +9,7 @@ import {
   Ban,
   Check,
   GitBranch,
-  Link2,
   MessageSquare,
-  Paperclip,
   Trash2,
   X,
 } from 'lucide-react';
@@ -29,6 +27,9 @@ import {
 } from '../../lib/board.js';
 import { ErrorState, Spinner } from '../common/Feedback.js';
 import { useToast } from '../common/Toast.js';
+import { useRecentIssues } from '../../state/local.js';
+import AttachmentsSection from './AttachmentsSection.js';
+import LinksSection from './LinksSection.js';
 
 function Meta({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -37,12 +38,6 @@ function Meta({ label, children }: { label: string; children: ReactNode }) {
       <dd className="mt-1 text-xs">{children}</dd>
     </div>
   );
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export default function IssueDrawer({
@@ -117,6 +112,24 @@ function IssueDrawerContent({
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [commentDraft, setCommentDraft] = useState('');
   const [confirmCommentId, setConfirmCommentId] = useState<string | null>(null);
+
+  const { remember: rememberRecentIssue } = useRecentIssues();
+  useEffect(() => {
+    rememberRecentIssue({
+      key: issue.key,
+      title: issue.title,
+      projectKey: issue.project.key,
+      projectName: issue.project.name,
+      stage: issue.stage,
+    });
+  }, [
+    issue.key,
+    issue.title,
+    issue.stage,
+    issue.project.key,
+    issue.project.name,
+    rememberRecentIssue,
+  ]);
 
   const current = conflictIssue ?? issue;
   const dirty = titleDraft !== baseTitle || descriptionDraft !== baseDescription;
@@ -787,48 +800,9 @@ function IssueDrawerContent({
           {childError ? <p className="mt-1 text-[11px] text-[var(--danger)]">{childError}</p> : null}
         </section>
 
-        {current.attachments.length > 0 ? (
-          <section>
-            <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.14em] muted">
-              <Paperclip size={12} /> Attachments
-            </h3>
-            <div className="space-y-1">
-              {current.attachments.map((attachment) => (
-                <div
-                  key={attachment.id}
-                  className="flex items-center gap-2 rounded-md border border-subtle px-2 py-1.5 text-xs"
-                  title="Open/download arrives in M6"
-                >
-                  <Paperclip size={12} className="muted" />
-                  <span className="min-w-0 flex-1 truncate">{attachment.original_name}</span>
-                  <span className="text-[10px] muted">{formatBytes(attachment.size_bytes)}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        ) : null}
+        <AttachmentsSection issue={current} />
 
-        {current.links.length > 0 ? (
-          <section>
-            <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.14em] muted">
-              <Link2 size={12} /> Links
-            </h3>
-            <div className="space-y-1">
-              {current.links.map((link) => (
-                <a
-                  key={link.id}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 rounded-md border border-subtle px-2 py-1.5 text-xs hover:bg-[var(--surface-2)]"
-                >
-                  <Link2 size={12} className="muted" />
-                  <span className="min-w-0 flex-1 truncate">{link.label ?? link.url}</span>
-                </a>
-              ))}
-            </div>
-          </section>
-        ) : null}
+        <LinksSection issue={current} />
 
         <section>
           <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.14em] muted">
@@ -973,10 +947,7 @@ function IssueDrawerContent({
           </div>
         </section>
 
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-[11px] muted">
-            Attachments, link editing, and the command palette arrive in M6.
-          </p>
+        <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             className="btn"

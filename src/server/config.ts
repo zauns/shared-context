@@ -141,3 +141,14 @@ export function ensureDataDirs(config: AppConfig): void {
     fs.mkdirSync(directory, { recursive: true });
   }
 }
+
+/**
+ * Remove staging files left by a crash or killed upload. Only call this at
+ * startup, when no upload can be in flight for this data directory.
+ */
+export function cleanTmpDir(config: AppConfig): void {
+  if (!fs.existsSync(config.tmpDir)) return;
+  for (const entry of fs.readdirSync(config.tmpDir)) {
+    fs.rmSync(path.join(config.tmpDir, entry), { recursive: true, force: true });
+  }
+}

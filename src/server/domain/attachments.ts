@@ -31,6 +31,7 @@ export function attachmentRowToAttachment(db: Database, row: AttachmentRow): Att
 }
 
 export interface CreateAttachmentRecordInput {
+  id?: string;
   issue: string;
   original_name: string;
   stored_path: string;
@@ -61,7 +62,7 @@ export function createAttachmentRecord(
     return { ...attachmentRowToAttachment(db, existing), id: existing.id };
   }
   const row: AttachmentRow = {
-    id: newId(),
+    id: input.id ?? newId(),
     issue_id: issue.id,
     original_name: input.original_name,
     stored_path: input.stored_path,

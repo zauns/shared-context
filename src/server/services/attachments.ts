@@ -10,6 +10,7 @@ import {
   findAttachmentRow,
 } from '../db/repositories/attachments.js';
 import { requireActorRow } from '../domain/actors.js';
+import type { AttachmentRow } from '../db/repositories/rows.js';
 import {
   attachmentRowToAttachment,
   createAttachmentRecord,
@@ -19,7 +20,7 @@ import { newId } from '../domain/ids.js';
 import { requireIssueRow } from '../domain/issues.js';
 import type { Attachment } from '../domain/types.js';
 
-const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+export const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
 const MAX_TEXT_BYTES = 1024 * 1024;
 const MAX_PDF_TEXT_BYTES = 2 * 1024 * 1024;
 const MAX_IMAGE_CONTEXT_BYTES = 5 * 1024 * 1024;
@@ -51,7 +52,7 @@ export function sanitizeAttachmentName(name: string): string {
   const withoutControl = [...path.basename(name)]
     .map((character) => (character.charCodeAt(0) < 32 ? '_' : character))
     .join('');
-  const base = withoutControl.replace(/[<>:"/\\|?*]/g, '_').trim();
+  const base = withoutControl.replace(/[<>:"/\\|?*%!]/g, '_').trim();
   const withoutDots = base.replace(/^[. ]+|[. ]+$/g, '');
   const candidate = withoutDots || 'file';
   const extension = path.extname(candidate);
@@ -102,6 +103,12 @@ export async function addAttachmentFromPath(
   }
 
   const originalName = input.name ?? path.basename(input.filePath);
+  if (originalName.length === 0 || originalName.length > 255) {
+    throw new DomainError('validation_error', 'Attachment filename must be 1–255 characters');
+  }
+  if (stat.size <= 0) {
+    throw new DomainError('validation_error', 'Attachment is empty');
+  }
   const extension = extensionOf(originalName);
   const allowed = ALLOWED_TYPES[extension];
   if (!allowed) {
@@ -133,45 +140,58 @@ export async function addAttachmentFromPath(
 
   const id = newId();
   const directory = path.join(config.attachmentsDir, id);
-  fs.mkdirSync(directory, { recursive: true });
   const safeName = sanitizeAttachmentName(originalName);
   const destination = path.join(directory, safeName);
-  fs.copyFileSync(input.filePath, destination);
 
-  let textPath: string | null = null;
-  if (allowed.kind === 'text') {
-    const text = buffer.subarray(0, MAX_TEXT_BYTES).toString('utf8');
-    if (text.trim().length > 0) {
-      const sidecar = `${destination}.text`;
-      fs.writeFileSync(sidecar, text, 'utf8');
-      textPath = relativeToDataDir(config, sidecar);
-    }
-  } else if (allowed.kind === 'pdf') {
-    try {
-      const extracted = await extractText(new Uint8Array(buffer), { mergePages: true });
-      const text = typeof extracted.text === 'string' ? extracted.text : '';
+  try {
+    fs.mkdirSync(directory, { recursive: true });
+    fs.copyFileSync(input.filePath, destination);
+
+    let textPath: string | null = null;
+    if (allowed.kind === 'text') {
+      const text = buffer.subarray(0, MAX_TEXT_BYTES).toString('utf8');
       if (text.trim().length > 0) {
         const sidecar = `${destination}.text`;
-        fs.writeFileSync(sidecar, text.slice(0, MAX_PDF_TEXT_BYTES), 'utf8');
+        fs.writeFileSync(sidecar, text, 'utf8');
         textPath = relativeToDataDir(config, sidecar);
       }
-    } catch {
-      // Scanned or malformed PDFs remain metadata-only; OCR is out of scope.
+    } else if (allowed.kind === 'pdf') {
+      try {
+        const extracted = await extractText(new Uint8Array(buffer), { mergePages: true });
+        const text = typeof extracted.text === 'string' ? extracted.text : '';
+        if (text.trim().length > 0) {
+          const sidecar = `${destination}.text`;
+          fs.writeFileSync(sidecar, text.slice(0, MAX_PDF_TEXT_BYTES), 'utf8');
+          textPath = relativeToDataDir(config, sidecar);
+        }
+      } catch {
+        // Scanned or malformed PDFs remain metadata-only; OCR is out of scope.
+      }
     }
+
+    const attachment = createAttachmentRecord(db, {
+      id,
+      issue: issue.id,
+      original_name: originalName,
+      stored_path: relativeToDataDir(config, destination),
+      mime_type: allowed.mime,
+      size_bytes: stat.size,
+      sha256,
+      text_path: textPath,
+      actor: actor.id,
+    });
+
+    if (attachment.id !== id) {
+      // Another upload of the same bytes won the race; keep the existing row/file.
+      fs.rmSync(directory, { recursive: true, force: true });
+      return { attachment, deduplicated: true };
+    }
+
+    return { attachment, deduplicated: false };
+  } catch (error) {
+    fs.rmSync(directory, { recursive: true, force: true });
+    throw error;
   }
-
-  const attachment = createAttachmentRecord(db, {
-    issue: issue.id,
-    original_name: originalName,
-    stored_path: relativeToDataDir(config, destination),
-    mime_type: allowed.mime,
-    size_bytes: stat.size,
-    sha256,
-    text_path: textPath,
-    actor: actor.id,
-  });
-
-  return { attachment, deduplicated: false };
 }
 
 export interface ReadAttachmentInput {
@@ -243,6 +263,49 @@ export async function readAttachmentForActor(
   return { attachment };
 }
 
-export function attachmentAbsolutePath(config: AppConfig, relativePath: string): string {
-  return absoluteFromDataDir(config, relativePath);
+export interface ResolvedAttachmentFile {
+  row: AttachmentRow;
+  absolutePath: string;
+}
+
+/**
+ * Resolve an Attachment to a real path inside the managed data directory.
+ * The database row is the only source of the path; a row that points outside
+ * the data directory (or at a missing/non-file target) is treated as not found.
+ */
+export function resolveAttachmentFile(
+  db: Database,
+  config: AppConfig,
+  id: string,
+): ResolvedAttachmentFile {
+  const row = findAttachmentRow(db, id);
+  if (!row || row.deleted_at) {
+    throw new DomainError('not_found', `Attachment not found: ${id}`);
+  }
+
+  let realDataDir: string;
+  let realPath: string;
+  try {
+    realDataDir = fs.realpathSync(config.dataDir);
+    realPath = fs.realpathSync(absoluteFromDataDir(config, row.stored_path));
+  } catch {
+    throw new DomainError('not_found', `Attachment file is missing: ${id}`);
+  }
+
+  const relative = path.relative(realDataDir, realPath);
+  if (relative === '' || relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new DomainError('not_found', `Attachment file is unavailable: ${id}`);
+  }
+
+  let stat: fs.Stats;
+  try {
+    stat = fs.statSync(realPath);
+  } catch {
+    throw new DomainError('not_found', `Attachment file is missing: ${id}`);
+  }
+  if (!stat.isFile()) {
+    throw new DomainError('not_found', `Attachment file is unavailable: ${id}`);
+  }
+
+  return { row, absolutePath: realPath };
 }

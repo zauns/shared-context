@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Server } from 'node:http';
-import { loadConfig, ensureDataDirs, type AppConfig } from './config.js';
+import { loadConfig, ensureDataDirs, cleanTmpDir, type AppConfig } from './config.js';
 import { createLogger, type Logger } from './logger.js';
 import { openDatabase, closeDatabase, type Database } from './db/connection.js';
 import { migrate } from './db/migrate.js';
@@ -18,6 +18,7 @@ export interface StartedServer {
 export async function startServer(overrides: Partial<AppConfig> = {}): Promise<StartedServer> {
   const config = loadConfig(overrides);
   ensureDataDirs(config);
+  cleanTmpDir(config);
   const logger = createLogger(config.logLevel);
   const db = openDatabase(config.dbPath);
   const applied = migrate(db);

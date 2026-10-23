@@ -3,6 +3,7 @@ import HomeRoute from './routes/HomeRoute.js';
 import ProjectShell from './routes/ProjectShell.js';
 import SetupRoute from './routes/SetupRoute.js';
 import BoardRoute from './routes/BoardRoute.js';
+import ProjectSettingsRoute from './routes/ProjectSettingsRoute.js';
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
         <Route index element={<Navigate to="board" replace />} />
         <Route path="board" element={<BoardRoute />} />
         <Route path="issues/:issueKey" element={<BoardRoute />} />
+        <Route path="settings" element={<ProjectSettingsRoute />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

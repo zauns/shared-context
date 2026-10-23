@@ -115,6 +115,8 @@ Use the SDK client against a real HTTP server with a test token.
 
 ## UI tests (Playwright)
 
+**M6 status:** no Playwright suite is wired yet; `npm run test:ui` is not a working check. These flows were exercised by browser smoke on the built daemon; add the suite before relying on the command.
+
 - Load the board; six columns; Done/Cancelled collapse.
 - Create an Issue from a column; Stage pre-filled.
 - Drag a card to another column; reload and verify.
@@ -154,7 +156,7 @@ Use the SDK client against a real HTTP server with a test token.
 - Docs/plan guards run on every push and PR now.
 - M0 adds `npm ci`, `npm run typecheck`, `npm test`.
 - M2 adds the concurrency suite as a required job.
-- M4 adds Playwright on a separate job with a cached browser.
+- UI automation is still open as of M6: add a Playwright job with a cached browser once the suite lands.
 - Windows-specific manual checks are documented, not CI-gated; a Windows runner can be added later for attachment/open tests.
 
 ## Acceptance criteria

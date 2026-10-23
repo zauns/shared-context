@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { FilterState } from '../lib/filters.js';
+import type { Stage } from '../api/types.js';
 
 export function useLocalStorageState<T>(
   key: string,
@@ -102,4 +103,44 @@ export function useSavedViews(projectKey: string): {
 
 export function useLastProject(): [string, (value: string) => void] {
   return useLocalStorageState<string>('sc.lastProject', '');
+}
+
+export interface RecentIssue {
+  key: string;
+  title: string;
+  projectKey: string;
+  projectName: string;
+  stage: Stage;
+  at: number;
+}
+
+export function useRecentIssues(): {
+  recent: RecentIssue[];
+  remember: (issue: Omit<RecentIssue, 'at'>) => void;
+} {
+  const [recent, setRecent] = useLocalStorageState<RecentIssue[]>('sc.recentIssues', []);
+  const remember = useCallback(
+    (issue: Omit<RecentIssue, 'at'>) => {
+      setRecent((previous) => [
+        { ...issue, at: Date.now() },
+        ...previous.filter((entry) => entry.key !== issue.key),
+      ].slice(0, 10));
+    },
+    [setRecent],
+  );
+  return { recent, remember };
+}
+
+export function useRecentProjects(): {
+  recent: string[];
+  remember: (key: string) => void;
+} {
+  const [recent, setRecent] = useLocalStorageState<string[]>('sc.recentProjects', []);
+  const remember = useCallback(
+    (key: string) => {
+      setRecent((previous) => [key, ...previous.filter((entry) => entry !== key)].slice(0, 6));
+    },
+    [setRecent],
+  );
+  return { recent, remember };
 }

@@ -194,3 +194,8 @@ export interface IssueListResult {
   next_cursor: string | null;
   total: number;
 }
+
+export interface SearchResultItem {
+  project: { id: string; key: string; name: string };
+  issue: IssueCard;
+}

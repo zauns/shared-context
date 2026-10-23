@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { api, ApiError } from '../api/client.js';
@@ -41,6 +41,7 @@ export default function BoardRoute() {
   const { projectKey = '', issueKey } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const toast = useToast();
   const filters = useMemo(() => parseFilters(searchParams), [searchParams]);
@@ -52,6 +53,10 @@ export default function BoardRoute() {
   const { collapsed, toggle } = useCollapsedColumns(projectKey);
   const [createOpen, setCreateOpen] = useState(false);
   const [createStage, setCreateStage] = useState<Stage | undefined>(undefined);
+  const newIssueRequested = Boolean(
+    (location.state as { newIssue?: boolean } | null)?.newIssue,
+  );
+  const createModalOpen = createOpen || newIssueRequested;
 
   const project =
     boardQuery.data?.project ?? projectsQuery.data?.find((entry) => entry.key === projectKey);
@@ -82,6 +87,16 @@ export default function BoardRoute() {
   function openCreate(stage?: Stage) {
     setCreateStage(stage);
     setCreateOpen(true);
+  }
+
+  function handleCreateOpenChange(open: boolean) {
+    setCreateOpen(open);
+    if (!open && newIssueRequested) {
+      navigate(`${location.pathname}${location.search}`, {
+        replace: true,
+        state: null,
+      });
+    }
   }
 
   async function handleMove(issue: IssueCard, stage: Stage, position: number) {
@@ -215,8 +230,8 @@ export default function BoardRoute() {
       ) : null}
 
       <CreateIssueModal
-        open={createOpen}
-        onOpenChange={setCreateOpen}
+        open={createModalOpen}
+        onOpenChange={handleCreateOpenChange}
         projectKey={projectKey}
         defaultStage={createStage}
         modules={modulesQuery.data ?? []}

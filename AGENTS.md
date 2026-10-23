@@ -4,7 +4,7 @@ A local, multi-project issue tracker and context service for coding agents, expo
 
 ## Project
 
-- Status: M0, M1, M2, M3, M4, and M5 are implemented. M6 (attachment UI and command palette) is next.
+- Status: M0, M1, M2, M3, M4, M5, and M6 are implemented. M7 (settings, trash, export, backup, startup) is next.
 - Repository (private): https://github.com/zauns/shared-context
 - Source of truth: `plan/README.md` (plan index and milestone tracker), `CONTEXT.md` (domain glossary), and `docs/adr/` (decision records).
 - Stack: Node 24 + TypeScript, Express 5, `node:sqlite` (WAL + FTS5), React + Vite.
@@ -37,25 +37,25 @@ Implemented:
 - `src/server/db/repositories/` — projects, actors, modules, issues, activities, comments, links, attachments.
 - `src/server/domain/` — types, errors, validation, IDs, time, projects, project summaries, actors, modules, issues, activity, comments, links, attachments, docs.
 - `src/server/http/server.ts` — Express app, host/CSRF guards, `/healthz`, API mounting, static UI fallback.
-- `src/server/http/routes/` — system/setup/config/actors/search, projects/modules/board/context/docs, issues/comments/links/attachments metadata, and SSE events.
+- `src/server/http/routes/` — system/setup/config/actors/search, projects/modules/board/context/docs, issues/comments/links, attachments upload/content/open/remove, and SSE events.
 - `src/server/services/change-bus.ts` — post-commit publish, SSE fan-out, and `waitForChange`.
-- `src/server/services/mutations.ts` — cursor-captured post-commit publishing for HTTP and MCP.
-- `src/server/services/attachments.ts` — file copy, hashing, dedupe, text/PDF extraction, image gating.
+- `src/server/services/mutations.ts` — cursor-captured post-commit publishing for sync HTTP/MCP mutations and async attachment work.
+- `src/server/services/attachments.ts` — file copy, hashing, dedupe, text/PDF extraction, image gating, and realpath-contained file resolution.
+- `src/server/services/open-file.ts` — Windows default-handler launch with argument-safe `cmd /c start` (Explorer fallback), injectable for tests.
 - `src/server/mcp/` — Streamable HTTP transport, session state, bearer auth, tool result envelopes, and all 23 tools.
-- `src/web/api/` — typed client, TanStack Query hooks, SSE invalidation, and shared types.
-- `src/web/components/` — shell/sidebar, board, cards, filters, create modal, toasts, and the editable Issue drawer.
-- `src/web/routes/` — setup, home redirect, Project shell, board, and deep-linked Issue route.
-- `src/web/lib/` — URL filter serialization, board position/move helpers, labels, and relative time.
-- `src/web/state/` — theme, density, collapsed columns, saved views, and last Project.
-- `src/web/` — React/Vite board UI with editable drawer, comments, children, and conflict handling.
+- `src/web/api/` — typed client, TanStack Query hooks, SSE invalidation, multipart upload, and shared types.
+- `src/web/components/` — shell/sidebar, board, cards, filters, create modal, toasts, command palette, and the editable Issue drawer with attachments and links.
+- `src/web/routes/` — setup, home redirect, Project shell, board, deep-linked Issue route, and a read-only Project settings overview.
+- `src/web/lib/` — URL filter serialization, board position/move helpers, labels, byte formatting, and relative time.
+- `src/web/state/` — theme, density, collapsed columns, saved views, last/recent Projects, and recent Issues.
+- `src/web/` — React/Vite board UI with editable drawer, attachments, links, comments, children, conflict handling, and a `Ctrl/Cmd+K` palette.
 - `test/helpers/db.ts` — in-memory migrated database and seed.
-- `test/helpers/http.ts` — Supertest app with CSRF setup.
-- `test/unit/`, `test/integration/`, `test/concurrency/`, `test/mcp/` — domain, HTTP, SSE, MCP, and concurrency tests.
+- `test/helpers/http.ts` — Supertest app with CSRF setup and an injectable OS opener.
+- `test/unit/`, `test/integration/`, `test/concurrency/`, `test/mcp/` — domain, HTTP (including attachments), SSE, MCP, and concurrency tests.
 - `.github/workflows/ci.yml` — `npm ci`, typecheck, lint, test, build.
 
 Planned next:
 
-- M6: attachment upload/open UI, PDF/image reading, and the command palette.
 - M7: settings, trash, export, backup, startup scripts.
 
 ## Conventions
@@ -77,4 +77,6 @@ Planned next:
 
 ## Notes
 
-M0/M1/M2/M3/M4/M5 verified on 2026-10-22: 5 docs/plan/schema guards and 42 Vitest tests pass; `npm run build` and `npm run lint` pass. Browser smoke covered setup, six columns, create Issue, drag, filters, title/description saves, priority update, block/unblock, comments, child creation, and conflict banner/reload.
+M0–M6 verified on 2026-10-23: 5 docs/plan/schema guards and 57 Vitest tests pass; `npm run typecheck`, `npm run lint`, and `npm run build` pass (Vite still warns that the main chunk exceeds 500 kB). Browser smoke covered setup, six columns, create Issue, drag, filters, title/description saves, priority, block/unblock, comments, child creation, conflict banner/reload, attachment upload/remove with Activity, link add/remove, cross-project palette search, palette actions, and Escape.
+
+Test gap: `package.json` still has `test:ui: playwright test`, but `@playwright/test` is not installed and there is no Playwright config or suite. Do not claim `npm run test:ui` works until a UI test harness lands; browser smoke plus the Vitest HTTP/unit suites are the current UI verification.

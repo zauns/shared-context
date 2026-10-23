@@ -7,6 +7,7 @@ import type { AppConfig } from '../../src/server/config.js';
 import { ensureDataDirs } from '../../src/server/config.js';
 import { createApp } from '../../src/server/http/server.js';
 import { createLogger } from '../../src/server/logger.js';
+import type { OpenFile } from '../../src/server/services/open-file.js';
 import { createTestDb } from './db.js';
 
 export function testConfig(): AppConfig {
@@ -28,7 +29,7 @@ export function testConfig(): AppConfig {
   };
 }
 
-export function createHttpTestApp(): {
+export function createHttpTestApp(options: { openFile?: OpenFile } = {}): {
   db: ReturnType<typeof createTestDb>;
   app: Express;
   config: AppConfig;
@@ -41,6 +42,7 @@ export function createHttpTestApp(): {
     db,
     config,
     logger: createLogger('silent'),
+    openFile: options.openFile,
   });
   return { db, app, config, csrfToken: app.locals.csrfToken as string };
 }

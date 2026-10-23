@@ -1,9 +1,7 @@
 import { Router } from 'express';
 import type { Database } from '../../db/connection.js';
-import { findAttachmentRow } from '../../db/repositories/attachments.js';
 import { findLinkRow } from '../../db/repositories/links.js';
 import { listIssueActivity } from '../../domain/activity.js';
-import { getAttachment, removeAttachment } from '../../domain/attachments.js';
 import {
   addComment,
   deleteComment,
@@ -187,38 +185,6 @@ export function createIssuesRouter({ db, bus }: IssuesRouterDeps): Router {
       }),
     );
     response.json({ ok: true });
-  });
-
-  router.post('/issues/:key/attachments', () => {
-    throw new DomainError('not_implemented', 'Attachment upload lands in M6');
-  });
-
-  router.get('/attachments/:id/content', () => {
-    throw new DomainError('not_implemented', 'Attachment content serving lands in M6');
-  });
-
-  router.post('/attachments/:id/open', () => {
-    throw new DomainError('not_implemented', 'Opening attachments lands in M6');
-  });
-
-  router.delete('/attachments/:id', (request, response) => {
-    const attachment = findAttachmentRow(db, request.params.id);
-    if (!attachment || attachment.deleted_at) {
-      throw new DomainError('not_found', `Attachment not found: ${request.params.id}`);
-    }
-    const actor = resolveRequestActor(db, request);
-    mutateWithPublish(db, bus, () =>
-      removeAttachment(db, {
-        issue: attachment.issue_id,
-        attachment_id: attachment.id,
-        actor: actor.id,
-      }),
-    );
-    response.json({ ok: true });
-  });
-
-  router.get('/attachments/:id', (request, response) => {
-    response.json({ ok: true, attachment: getAttachment(db, request.params.id) });
   });
 
   router.get('/issues/:key', (request, response) => {
