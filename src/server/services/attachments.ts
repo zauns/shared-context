@@ -49,7 +49,10 @@ function extensionOf(name: string): string {
 }
 
 export function sanitizeAttachmentName(name: string): string {
-  const withoutControl = [...path.basename(name)]
+  // Handle both separator styles regardless of the host platform: a client can
+  // send a Windows path while the daemon runs on Linux (CI) or vice versa.
+  const leaf = name.split(/[\\/]/).pop() ?? name;
+  const withoutControl = [...leaf]
     .map((character) => (character.charCodeAt(0) < 32 ? '_' : character))
     .join('');
   const base = withoutControl.replace(/[<>:"/\\|?*%!]/g, '_').trim();

@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
@@ -293,10 +294,17 @@ describe('Attachment HTTP API', () => {
       .attach('file', PNG, { filename: 'screenshot.png', contentType: 'image/png' });
     const id = uploaded.body.attachment.id as string;
 
-    const outsidePath = path.resolve(config.dataDir, '..', '..', 'outside-attachment.txt');
+    const outsidePath = path.join(
+      os.tmpdir(),
+      `shared-context-outside-${process.pid}-${Date.now()}.txt`,
+    );
     fs.writeFileSync(outsidePath, 'outside the store');
+    const escapedPath = path
+      .relative(config.dataDir, outsidePath)
+      .split(path.sep)
+      .join('/');
     db.prepare('UPDATE attachments SET stored_path = ? WHERE id = ?').run(
-      '../../outside-attachment.txt',
+      escapedPath,
       id,
     );
 
