@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router';
+import type { CSSProperties } from 'react';
 import { CSS } from '@dnd-kit/utilities';
 import { useSortable } from '@dnd-kit/sortable';
 import { Ban, GitBranch, MessageSquare, Paperclip } from 'lucide-react';
@@ -42,10 +43,15 @@ export function IssueCardView({
   const percent = childProgressPercent(issue);
   const { search } = useLocation();
   const issuePath = withSearch(`/projects/${projectKey}/issues/${issue.key}`, search);
+  const moduleColor = issue.module?.color ?? null;
+  const cardClass = `issue-card${overlay ? ' is-overlay' : ''}${
+    moduleColor ? ' has-module-color' : ''
+  }`;
 
   return (
     <article
-      className={`issue-card ${overlay ? 'is-overlay' : ''}`}
+      className={cardClass}
+      style={moduleColor ? ({ '--module-color': moduleColor } as CSSProperties) : undefined}
       data-issue-key={issue.key}
       onClick={(event) => {
         if (overlay) return;

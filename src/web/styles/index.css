@@ -282,6 +282,7 @@ button:disabled {
 }
 
 .issue-card {
+  position: relative;
   border: 1px solid var(--border);
   border-radius: 0.65rem;
   background: var(--surface-2);
@@ -311,6 +312,18 @@ button:disabled {
   cursor: grabbing;
   box-shadow: var(--shadow);
   transform: rotate(1.5deg);
+}
+
+.issue-card.has-module-color::before {
+  content: '';
+  position: absolute;
+  top: 0.45rem;
+  bottom: 0.45rem;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--module-color);
+  pointer-events: none;
 }
 
 .column {

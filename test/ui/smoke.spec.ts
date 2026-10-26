@@ -59,6 +59,20 @@ test('M7 smoke: setup, issue, attachment, settings, trash, backup, export, token
   await page.getByRole('link', { name: 'Back to board' }).click();
   await page.getByRole('link', { name: /SHC-1/ }).first().click();
   await expect(page.getByRole('dialog', { name: 'Issue SHC-1' })).toBeVisible();
+
+  // A Module color paints an accent strip on the left edge of its cards.
+  await page.getByLabel('Module', { exact: true }).selectOption('ui');
+  await expect(page.getByLabel('Module', { exact: true })).toHaveValue('ui');
+  await page.getByRole('button', { name: 'Close Issue' }).click();
+  const moduleCard = page.locator('.issue-card[data-issue-key="SHC-1"]');
+  await expect(moduleCard).toHaveClass(/has-module-color/);
+  const accentColor = await moduleCard.evaluate(
+    (element) => getComputedStyle(element, '::before').backgroundColor,
+  );
+  expect(accentColor).toBe('rgb(100, 116, 139)');
+  await page.getByRole('link', { name: /SHC-1/ }).first().click();
+  await expect(page.getByRole('dialog', { name: 'Issue SHC-1' })).toBeVisible();
+
   await page.getByRole('button', { name: 'Delete Issue' }).first().click();
   const deleteDialog = page.getByRole('dialog', { name: 'Delete SHC-1?' });
   await expect(deleteDialog).toBeVisible();

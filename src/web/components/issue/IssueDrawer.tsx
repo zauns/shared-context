@@ -596,6 +596,7 @@ function IssueDrawerContent({
           <Meta label="Module">
             <select
               className="select"
+              aria-label="Module"
               value={current.module?.slug ?? ''}
               onChange={(event) =>
                 void saveMetadata({ module: event.target.value || null }, 'module')
