@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import * as Dialog from '@radix-ui/react-dialog';
 import {
   ArrowRight,
@@ -14,6 +14,7 @@ import {
 import { api } from '../api/client.js';
 import type { ProjectSummary, SearchResultItem } from '../api/types.js';
 import { stageLabel } from '../lib/board.js';
+import { withSearch } from '../lib/filters.js';
 import { useRecentIssues, useRecentProjects } from '../state/local.js';
 
 type Group = 'Actions' | 'Issues' | 'Projects';
@@ -42,6 +43,7 @@ export default function CommandPalette({
   onToggleTheme: () => void;
 }) {
   const navigate = useNavigate();
+  const { search } = useLocation();
   const { recent: recentIssues, remember: rememberIssue } = useRecentIssues();
   const { recent: recentProjectKeys, remember: rememberProject } = useRecentProjects();
   const [query, setQuery] = useState('');
@@ -89,13 +91,15 @@ export default function CommandPalette({
       projectName: item.project.name,
       stage: item.issue.stage,
     });
-    navigate(`/projects/${item.project.key}/issues/${item.issue.key}`);
+    const path = `/projects/${item.project.key}/issues/${item.issue.key}`;
+    navigate(item.project.key === projectKey ? withSearch(path, search) : path);
     close();
   }
 
   function goToProject(project: ProjectSummary | { key: string; name: string }) {
     rememberProject(project.key);
-    navigate(`/projects/${project.key}/board`);
+    const path = `/projects/${project.key}/board`;
+    navigate(project.key === projectKey ? withSearch(path, search) : path);
     close();
   }
 
@@ -109,7 +113,9 @@ export default function CommandPalette({
       subtitle: `in ${projectKey}`,
       icon: <Plus size={15} />,
       run: () => {
-        navigate(`/projects/${projectKey}/board`, { state: { newIssue: true } });
+        navigate(withSearch(`/projects/${projectKey}/board`, search), {
+          state: { newIssue: true },
+        });
         close();
       },
     },
@@ -120,7 +126,7 @@ export default function CommandPalette({
       subtitle: projectKey,
       icon: <LayoutGrid size={15} />,
       run: () => {
-        navigate(`/projects/${projectKey}/board`);
+        navigate(withSearch(`/projects/${projectKey}/board`, search));
         close();
       },
     },
@@ -131,7 +137,7 @@ export default function CommandPalette({
       subtitle: projectKey,
       icon: <Settings size={15} />,
       run: () => {
-        navigate(`/projects/${projectKey}/settings`);
+        navigate(withSearch(`/projects/${projectKey}/settings`, search));
         close();
       },
     },

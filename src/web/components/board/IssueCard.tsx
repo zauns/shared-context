@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { CSS } from '@dnd-kit/utilities';
 import { useSortable } from '@dnd-kit/sortable';
 import { Ban, GitBranch, MessageSquare, Paperclip } from 'lucide-react';
@@ -10,6 +10,7 @@ import {
   priorityLabel,
   relativeTime,
 } from '../../lib/board.js';
+import { withSearch } from '../../lib/filters.js';
 
 function Avatar({ name, color }: { name: string; color: string | null }) {
   return (
@@ -39,7 +40,8 @@ export function IssueCardView({
 }) {
   const progress = childProgressLabel(issue);
   const percent = childProgressPercent(issue);
-  const issuePath = `/projects/${projectKey}/issues/${issue.key}`;
+  const { search } = useLocation();
+  const issuePath = withSearch(`/projects/${projectKey}/issues/${issue.key}`, search);
 
   return (
     <article
@@ -140,6 +142,7 @@ export function IssueCard({
   projectKey: string;
 }) {
   const navigate = useNavigate();
+  const { search } = useLocation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({
       id: issue.id,
@@ -161,7 +164,9 @@ export function IssueCard({
         issue={issue}
         projectKey={projectKey}
         onOpen={() => {
-          if (!isDragging) navigate(`/projects/${projectKey}/issues/${issue.key}`);
+          if (!isDragging) {
+            navigate(withSearch(`/projects/${projectKey}/issues/${issue.key}`, search));
+          }
         }}
       />
     </div>

@@ -24,6 +24,23 @@ test('M7 smoke: setup, issue, attachment, settings, trash, backup, export, token
   await page.getByRole('button', { name: 'Close Issue' }).click();
   await expect(page.getByRole('dialog', { name: 'Issue SHC-1' })).toHaveCount(0);
 
+  // Filters survive drawer open/close and a settings round-trip (URL state).
+  await page.getByLabel('Search Issues').fill('smoke');
+  await expect(page).toHaveURL(/[?&]q=smoke/);
+  await page.getByRole('link', { name: /SHC-1/ }).first().click();
+  await expect(page.getByRole('dialog', { name: 'Issue SHC-1' })).toBeVisible();
+  await expect(page).toHaveURL(/\/issues\/SHC-1[?&]q=smoke/);
+  await page.getByRole('button', { name: 'Close Issue' }).click();
+  await expect(page).toHaveURL(/\/board[?&]q=smoke/);
+  await expect(page.getByRole('link', { name: /SHC-1/ }).first()).toBeVisible();
+  await page.getByRole('link', { name: 'Project settings' }).click();
+  await expect(page.getByTestId('project-settings')).toBeVisible();
+  await page.getByRole('link', { name: 'Back to board' }).click();
+  await expect(page).toHaveURL(/\/board[?&]q=smoke/);
+  await expect(page.getByRole('link', { name: /SHC-1/ }).first()).toBeVisible();
+  await page.getByLabel('Search Issues').fill('');
+  await expect(page).toHaveURL(/\/board$/);
+
   await page.getByRole('link', { name: 'Project settings' }).click();
   await expect(page.getByTestId('project-settings')).toBeVisible();
 

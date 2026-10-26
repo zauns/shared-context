@@ -17,6 +17,7 @@ import {
   activeFilterCount,
   filtersToSearchParams,
   parseFilters,
+  withSearch,
 } from '../lib/filters.js';
 import { moveIssueInBoard } from '../lib/board.js';
 import { useCollapsedColumns } from '../state/local.js';
@@ -128,7 +129,7 @@ export default function BoardRoute() {
   function handleCreated(issue: IssueDetail) {
     setCreateOpen(false);
     void queryClient.invalidateQueries({ queryKey: ['board', projectKey] });
-    navigate(`/projects/${projectKey}/issues/${issue.key}`);
+    navigate(withSearch(`/projects/${projectKey}/issues/${issue.key}`, location.search));
   }
 
   if (projectsQuery.isLoading) return <FullPageSpinner />;
@@ -178,7 +179,7 @@ export default function BoardRoute() {
           <SseIndicator status={sseStatus} />
           <Link
             className="btn btn-icon btn-ghost"
-            to={`/projects/${projectKey}/settings`}
+            to={withSearch(`/projects/${projectKey}/settings`, location.search)}
             aria-label="Project settings"
             title="Project settings"
           >
@@ -250,7 +251,7 @@ export default function BoardRoute() {
       {issueKey ? (
         <IssueDrawer
           issueKey={issueKey}
-          onClose={() => navigate(`/projects/${projectKey}/board`)}
+          onClose={() => navigate(withSearch(`/projects/${projectKey}/board`, location.search))}
         />
       ) : null}
     </div>

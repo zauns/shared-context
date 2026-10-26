@@ -6,6 +6,7 @@ import {
   DEFAULT_FILTERS,
   filtersToSearchParams,
   parseFilters,
+  withSearch,
 } from '../../src/web/lib/filters.js';
 import {
   computeDropPosition,
@@ -85,6 +86,31 @@ describe('filter serialization', () => {
     const parsed = parseFilters(new URLSearchParams());
     expect(parsed.includeClosed).toBe(true);
     expect(activeFilterCount(parsed)).toBe(0);
+  });
+});
+
+describe('withSearch', () => {
+  it('returns the path unchanged for an empty search', () => {
+    expect(withSearch('/projects/SHC/board', '')).toBe('/projects/SHC/board');
+    expect(withSearch('/projects/SHC/board', '?')).toBe('/projects/SHC/board');
+    expect(withSearch('/projects/SHC/board', new URLSearchParams())).toBe('/projects/SHC/board');
+  });
+
+  it('appends a non-empty query string', () => {
+    expect(withSearch('/projects/SHC/issues/SHC-1', '?stages=todo&blocked=1')).toBe(
+      '/projects/SHC/issues/SHC-1?stages=todo&blocked=1',
+    );
+  });
+
+  it('accepts URLSearchParams input', () => {
+    const params = new URLSearchParams({ q: 'login bug', closed: '0' });
+    expect(withSearch('/projects/SHC/board', params)).toBe(
+      '/projects/SHC/board?q=login+bug&closed=0',
+    );
+  });
+
+  it('merges with an existing query on the path', () => {
+    expect(withSearch('/projects/SHC/board?x=1', 'q=a')).toBe('/projects/SHC/board?x=1&q=a');
   });
 });
 

@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useQueryClient } from '@tanstack/react-query';
 import ReactMarkdown from 'react-markdown';
@@ -25,6 +25,7 @@ import {
   relativeTime,
   stageLabel,
 } from '../../lib/board.js';
+import { withSearch } from '../../lib/filters.js';
 import { ErrorState, Spinner } from '../common/Feedback.js';
 import { useToast } from '../common/Toast.js';
 import { useRecentIssues } from '../../state/local.js';
@@ -87,6 +88,7 @@ function IssueDrawerContent({
   const queryClient = useQueryClient();
   const toast = useToast();
   const navigate = useNavigate();
+  const { search } = useLocation();
   const actors = useActors();
   const modules = useModules(issue.project.key);
   const issueOptions = useIssueOptions(issue.project.key);
@@ -414,7 +416,6 @@ function IssueDrawerContent({
       toast.push(`${issue.key} deleted.`, 'success');
       setDeleteOpen(false);
       onClose();
-      navigate(`/projects/${issue.project.key}/board`);
     } catch (cause) {
       handleError(cause, 'Could not delete the Issue');
     } finally {
@@ -766,7 +767,7 @@ function IssueDrawerContent({
             {current.children.map((child) => (
               <Link
                 key={child.id}
-                to={`/projects/${issue.project.key}/issues/${child.key}`}
+                to={withSearch(`/projects/${issue.project.key}/issues/${child.key}`, search)}
                 className="flex items-center gap-2 rounded-md border border-subtle px-2 py-1.5 text-xs hover:bg-[var(--surface-2)]"
               >
                 <span className="font-mono text-[10px] muted">{child.key}</span>
@@ -952,7 +953,9 @@ function IssueDrawerContent({
           <button
             type="button"
             className="btn"
-            onClick={() => navigate(`/projects/${issue.project.key}/board`)}
+            onClick={() =>
+              navigate(withSearch(`/projects/${issue.project.key}/board`, search))
+            }
           >
             Back to board
           </button>

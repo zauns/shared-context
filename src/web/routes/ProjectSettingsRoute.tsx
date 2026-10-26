@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   AlertTriangle,
@@ -32,6 +32,7 @@ import type {
 import { ErrorState, FullPageSpinner } from '../components/common/Feedback.js';
 import { useToast } from '../components/common/Toast.js';
 import { formatBytes, relativeTime } from '../lib/board.js';
+import { withSearch } from '../lib/filters.js';
 
 const DEFAULT_DOC_ALLOWLIST = [
   'AGENTS.md',
@@ -47,6 +48,7 @@ function message(cause: unknown, fallback: string): string {
 
 export default function ProjectSettingsRoute() {
   const { projectKey = '' } = useParams();
+  const { search } = useLocation();
   const projects = useProjects();
   const modules = useModules(projectKey || undefined);
   const trash = useTrash(projectKey || undefined);
@@ -84,7 +86,7 @@ export default function ProjectSettingsRoute() {
           <Link className="btn btn-ghost" to="/settings">
             Global settings
           </Link>
-          <Link className="btn" to={`/projects/${project.key}/board`}>
+          <Link className="btn" to={withSearch(`/projects/${project.key}/board`, search)}>
             Back to board
           </Link>
         </div>

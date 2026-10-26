@@ -91,3 +91,10 @@ export function sameFilters(a: FilterState, b: FilterState): boolean {
     a.includeClosed === b.includeClosed
   );
 }
+
+/** Append a non-empty query string to an in-Project navigation path. */
+export function withSearch(path: string, search: string | URLSearchParams): string {
+  const query = (typeof search === 'string' ? search : search.toString()).replace(/^\?/, '');
+  if (!query) return path;
+  return `${path}${path.includes('?') ? '&' : '?'}${query}`;
+}
